@@ -58,3 +58,30 @@
   background: #ccfbf1;
   color: #115e59;
 }
+
+.habit-card > div {
+  flex: 1;
+}
+
+.habit-card button {
+  padding: 6px 12px;
+  border: 1px solid #0f766e;
+  border-radius: 6px;
+  background: #fff;
+  color: #0f766e;
+  font: inherit;
+  cursor: pointer;
+}
+
+.panel {
+  margin-top: 24px;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.panel-content .habit-list {
+  margin-top: 12px;
+}

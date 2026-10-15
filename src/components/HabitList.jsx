@@ -1,6 +1,6 @@
 import HabitCard from "./HabitCard";
 
-export default function HabitList({ habits }) {
+export default function HabitList({ habits, onShowDetails }) {
   if (habits.length === 0) {
     return <p>Nenhum hábito cadastrado.</p>;
   }
@@ -10,9 +10,8 @@ export default function HabitList({ habits }) {
       {habits.map((habit) => (
         <HabitCard
           key={habit.id}
-          title={habit.title}
-          goal={habit.goal}
-          completed={habit.completed}
+          {...habit}
+          onShowDetails={onShowDetails}
         />
       ))}
     </section>
