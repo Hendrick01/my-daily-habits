@@ -1,0 +1,43 @@
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 32px 16px;
+}
+
+.hero h1 {
+  margin: 0 0 8px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #0f766e;
+}
+
+.habit-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.habit-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+}
+
+.habit-card h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.habit-card p {
+  margin: 4px 0 0;
+}
