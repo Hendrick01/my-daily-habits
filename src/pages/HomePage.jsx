@@ -2,6 +2,7 @@ import { useState } from "react";
 import Panel from "../components/Panel";
 import HabitList from "../components/HabitList";
 import { useHabits } from "../context/useHabits";
+import { fromDateKey } from "../utils/dates";
 
 const dateFormat = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" });
 
@@ -12,16 +13,16 @@ function greeting(hour) {
 }
 
 export default function HomePage() {
-  const { habits, completedCount } = useHabits();
+  const { habits, completedCount, today } = useHabits();
   const total = habits.length;
   const percentage = total === 0 ? 0 : Math.round((completedCount / total) * 100);
-  const [now] = useState(() => new Date());
+  const [hour] = useState(() => new Date().getHours());
 
   return (
     <>
       <section className="hero">
-        <p className="eyebrow">{dateFormat.format(now)}</p>
-        <h1>{greeting(now.getHours())}, Hendrick!</h1>
+        <p className="eyebrow">{dateFormat.format(fromDateKey(today))}</p>
+        <h1>{greeting(hour)}, Hendrick!</h1>
         <p className="hero-sub">Pequenos hábitos, progresso visível.</p>
 
         <div

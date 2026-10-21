@@ -1,6 +1,6 @@
 # My Daily Habits — painel do Hendrick
 
-Aplicativo web para acompanhar hábitos diários: você cadastra hábitos com uma meta, marca o que concluiu no dia e acompanha a porcentagem de progresso. É feito para quem quer criar uma rotina e ver a evolução de forma simples, com os dados salvos no próprio navegador e uma página que busca sugestões de hábitos numa API pública. Projeto final do módulo de React da Capacitação em Desenvolvimento Full Stack do ITEAM.
+Aplicativo web para acompanhar hábitos diários: você cadastra hábitos com uma meta, marca o que concluiu no dia e acompanha a porcentagem de progresso. É feito para quem quer criar uma rotina e ver a evolução de forma simples, com os dados salvos no próprio navegador, sequências de dias seguidos e uma página de sugestões de hábitos. Projeto final do módulo de React da Capacitação em Desenvolvimento Full Stack do ITEAM.
 
 ## Requisitos
 
@@ -29,7 +29,7 @@ O endereço da API de sugestões vem da variável `VITE_API_BASE_URL`. Para conf
 cp .env.example .env
 ```
 
-O `.env` não vai para o Git. Se ele não existir, o app usa um endereço padrão (`https://jsonplaceholder.typicode.com`), então o projeto funciona mesmo sem essa etapa.
+O `.env` não vai para o Git. Com a variável vazia (ou sem `.env`), as sugestões vêm do próprio site, do arquivo `public/api/sugestoes.json`, então o projeto funciona mesmo sem essa etapa.
 
 ## Execução
 
@@ -55,30 +55,33 @@ npm run preview
 
 O endereço aparece no terminal, normalmente `http://localhost:4173`.
 
-Verificar o código com o lint:
+Verificar o código com o lint e rodar os testes:
 
 ```bash
 npm run lint
+npm test
 ```
 
 ## Funcionalidades
 
 | Rota | O que faz |
 | --- | --- |
-| `/` | Mostra o contador "X de Y hábitos concluídos." e a lista de hábitos do dia |
-| `/novo` | Cadastro de hábito com validação; após cadastrar, volta para o início |
-| `/habitos` | Lista completa de hábitos |
-| `/habitos/:habitId` | Detalhe de um hábito (título, meta e status), com botão Voltar |
-| `/progresso` | Porcentagem de hábitos concluídos; sem hábitos, redireciona para `/novo` |
-| `/sugestoes` | Busca 6 sugestões de hábitos numa API externa ao clicar no botão |
+| `/` | Saudação, barra de progresso, o contador "X de Y hábitos concluídos." e a lista do dia |
+| `/novo` | Cadastro com validação e ideias rápidas de um clique; após cadastrar, volta para o início |
+| `/habitos` | Lista completa com filtro (todos, pendentes, concluídos) e backup dos dados |
+| `/habitos/:habitId` | Detalhe: sequência, total de dias, últimos 7 dias (clicáveis), editar e excluir |
+| `/progresso` | Anel de porcentagem, gráfico da semana e maior sequência; sem hábitos, redireciona para `/novo` |
+| `/sugestoes` | Sorteia 6 sugestões de hábitos ao clicar no botão, com opção de adicionar |
 | `/sobre` | Sobre o projeto |
 | qualquer outro endereço | Página não encontrada |
 
 Além disso:
 
-- Cada hábito pode ser marcado como concluído ou pendente.
-- Os hábitos ficam salvos no navegador (`localStorage`) e sobrevivem ao recarregamento da página.
+- Cada hábito guarda os dias em que foi feito: a lista recomeça sozinha a cada dia, inclusive com o app aberto na virada da meia-noite.
+- Dá para marcar ou desmarcar dias passados, para corrigir um esquecimento.
+- Os hábitos ficam salvos no navegador (`localStorage`); o backup exporta e importa tudo num arquivo JSON.
 - Se os dados salvos estiverem corrompidos, o app volta aos hábitos iniciais sem quebrar a tela.
+- Tema claro e escuro, que segue o sistema e lembra a escolha.
 - O título da aba mostra o progresso, no formato "X/Y hábitos concluídos".
 
 ## Tecnologias
@@ -86,7 +89,7 @@ Além disso:
 - React 19
 - Vite 8
 - React Router 7
-- API pública [JSONPlaceholder](https://jsonplaceholder.typicode.com)
+- CSS puro com variáveis (sem bibliotecas de UI)
 
 ## Autor
 

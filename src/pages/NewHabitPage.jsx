@@ -30,7 +30,7 @@ export default function NewHabitPage() {
         <p>Comece pequeno: um hábito simples, uma meta clara.</p>
       </header>
 
-      <HabitForm onAddHabit={handleAddHabit} />
+      <HabitForm onSave={handleAddHabit} />
 
       {availableIdeas.length > 0 && (
         <section className="ideas">

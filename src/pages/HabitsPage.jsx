@@ -1,5 +1,6 @@
 import { useState } from "react";
 import HabitList from "../components/HabitList";
+import BackupPanel from "../components/BackupPanel";
 import { useHabits } from "../context/useHabits";
 
 const filters = [
@@ -23,6 +24,7 @@ export default function HabitsPage() {
         ))}
       </div>
       <HabitList filter={filter} />
+      <BackupPanel />
     </>
   );
 }

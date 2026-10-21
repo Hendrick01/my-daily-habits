@@ -415,6 +415,65 @@
   font-weight: 500;
 }
 
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.form-actions .btn-primary {
+  flex: 1;
+}
+
+.card .form {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+
+.btn:focus-within {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* ---------- Backup ---------- */
+
+.backup {
+  margin-top: 28px;
+}
+
+.backup h2 {
+  font-size: 1.1rem;
+}
+
+.backup .actions {
+  margin-top: 14px;
+}
+
+.backup .status-msg {
+  margin-top: 10px;
+}
+
+.confirm {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface));
+}
+
+.confirm p {
+  margin: 0;
+}
+
+.confirm .actions {
+  margin-top: 10px;
+}
+
+.confirm .btn-danger {
+  margin-left: 0;
+}
+
 .ideas {
   margin-top: 28px;
 }
@@ -577,12 +636,33 @@
   height: 30px;
   border: 1px solid var(--border);
   border-radius: 9px;
+  padding: 0;
   background: var(--surface-2);
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.week-dot:hover {
+  border-color: var(--primary);
+}
+
+.week-dot:active {
+  transform: scale(0.9);
 }
 
 .week-dot.is-done {
   border-color: var(--primary);
   background: var(--primary);
+}
+
+.week-day .is-today {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.hint {
+  margin: -4px 0 10px;
+  font-size: 0.85rem;
 }
 
 .actions {
@@ -712,8 +792,9 @@
   background: var(--surface);
 }
 
-.suggestion strong::first-letter {
-  text-transform: uppercase;
+.suggestion .muted {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
 }
 
 .skeleton {

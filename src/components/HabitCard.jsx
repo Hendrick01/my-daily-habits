@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import { useHabits } from "../context/useHabits";
-import { getStreak } from "../utils/dates";
+import { fromDateKey, getStreak } from "../utils/dates";
 
 export default function HabitCard({ id, title, goal = "Sem meta definida", completed, completedDates }) {
-  const { toggleHabit } = useHabits();
-  const streak = getStreak(completedDates);
+  const { toggleHabit, today } = useHabits();
+  const streak = getStreak(completedDates, fromDateKey(today));
 
   return (
     <article className={`habit-card${completed ? " is-complete" : ""}`}>

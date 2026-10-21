@@ -2,36 +2,25 @@ import { useState, useEffect } from "react";
 import { initialHabits } from "../data/habits";
 import { HabitsContext } from "./useHabits";
 import { toDateKey } from "../utils/dates";
+import { sanitizeHabits } from "../utils/habits";
 
 const STORAGE_KEY = "my-daily-habits:habits";
-
-// A versão antiga guardava `completed: true/false`; agora cada hábito guarda os dias em que foi feito.
-function normalize(habit, today) {
-  if (Array.isArray(habit.completedDates)) return habit;
-  const { completed, ...rest } = habit;
-  return { ...rest, completedDates: completed ? [today] : [] };
-}
-
-function isHabit(value) {
-  return value !== null && typeof value === "object" && typeof value.id === "string" && typeof value.title === "string";
-}
 
 function loadHabits() {
   const today = toDateKey();
   try {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (Array.isArray(stored)) return stored.filter(isHabit).map((habit) => normalize(habit, today));
+    if (Array.isArray(stored)) return sanitizeHabits(stored, today);
   } catch {
     // JSON inválido: cai nos hábitos iniciais abaixo
   }
-  return initialHabits.map((habit) => normalize(habit, today));
+  return sanitizeHabits(initialHabits, today);
 }
 
 export function HabitsProvider({ children }) {
   const [habits, setHabits] = useState(loadHabits);
+  const [today, setToday] = useState(toDateKey);
 
-  // ponytail: "hoje" é recalculado a cada render; com o app aberto na virada do dia, atualiza no próximo clique.
-  const today = toDateKey();
   const habitsToday = habits.map((habit) => ({ ...habit, completed: habit.completedDates.includes(today) }));
   const completedCount = habitsToday.filter((habit) => habit.completed).length;
 
@@ -48,19 +37,29 @@ export function HabitsProvider({ children }) {
     };
   }, [completedCount, habits.length]);
 
-  function toggleHabit(habitId) {
-    setHabits((currentHabits) =>
-      currentHabits.map((habit) => {
-        if (habit.id !== habitId) return habit;
-        const doneToday = habit.completedDates.includes(today);
-        return {
-          ...habit,
-          completedDates: doneToday
-            ? habit.completedDates.filter((date) => date !== today)
-            : [...habit.completedDates, today],
-        };
-      }),
-    );
+  // Vira o dia sozinho: confere a data a cada minuto e quando a aba volta a ficar visível.
+  useEffect(() => {
+    const refresh = () => setToday(toDateKey());
+    const timer = setInterval(refresh, 60_000);
+    document.addEventListener("visibilitychange", refresh);
+
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, []);
+
+  function updateWhere(habitId, change) {
+    setHabits((currentHabits) => currentHabits.map((habit) => (habit.id === habitId ? change(habit) : habit)));
+  }
+
+  function toggleHabit(habitId, date = today) {
+    updateWhere(habitId, (habit) => ({
+      ...habit,
+      completedDates: habit.completedDates.includes(date)
+        ? habit.completedDates.filter((day) => day !== date)
+        : [...habit.completedDates, date].sort(),
+    }));
   }
 
   function addHabit(title, goal) {
@@ -74,13 +73,28 @@ export function HabitsProvider({ children }) {
     setHabits((currentHabits) => [...currentHabits, newHabit]);
   }
 
+  function updateHabit(habitId, title, goal) {
+    updateWhere(habitId, (habit) => ({ ...habit, title: title.trim(), goal: goal.trim() }));
+  }
+
   function removeHabit(habitId) {
     setHabits((currentHabits) => currentHabits.filter((habit) => habit.id !== habitId));
   }
 
-  return (
-    <HabitsContext value={{ habits: habitsToday, completedCount, toggleHabit, addHabit, removeHabit }}>
-      {children}
-    </HabitsContext>
-  );
+  function replaceHabits(newHabits) {
+    setHabits(sanitizeHabits(newHabits, today));
+  }
+
+  const value = {
+    habits: habitsToday,
+    completedCount,
+    today,
+    toggleHabit,
+    addHabit,
+    updateHabit,
+    removeHabit,
+    replaceHabits,
+  };
+
+  return <HabitsContext value={value}>{children}</HabitsContext>;
 }

@@ -29,7 +29,7 @@ export default function SuggestionsPage() {
     <>
       <header className="page-head">
         <h1>Sugestões</h1>
-        <p>Ideias de hábitos vindas de uma API pública. Gostou de alguma? Adicione à sua lista.</p>
+        <p>Cada busca sorteia 6 ideias. Gostou de alguma? Adicione à sua lista.</p>
       </header>
 
       <button type="button" className="btn btn-primary" onClick={handleSearch} disabled={status === "loading"}>
@@ -37,7 +37,7 @@ export default function SuggestionsPage() {
       </button>
 
       <div className="suggestions" aria-live="polite">
-        {status === "idle" && <p className="status-msg">Clique no botão acima para buscar ideias de hábitos na API.</p>}
+        {status === "idle" && <p className="status-msg">Clique no botão acima para buscar ideias de hábitos.</p>}
 
         {status === "loading" && (
           <>
@@ -62,12 +62,15 @@ export default function SuggestionsPage() {
                 const added = myTitles.has(item.title.toLowerCase());
                 return (
                   <li key={item.id} className="suggestion">
-                    <strong>{item.title}</strong>
+                    <div>
+                      <strong>{item.title}</strong>
+                      <p className="muted">Meta: {item.goal}</p>
+                    </div>
                     <button
                       type="button"
                       className="btn btn-ghost btn-sm"
                       disabled={added}
-                      onClick={() => addHabit(item.title, "1x por dia")}
+                      onClick={() => addHabit(item.title, item.goal)}
                     >
                       {added ? "Adicionado ✓" : "+ Adicionar"}
                     </button>

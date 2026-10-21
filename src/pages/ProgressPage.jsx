@@ -1,10 +1,10 @@
 import { useHabits } from "../context/useHabits";
-import { getStreak, lastDays, toDateKey } from "../utils/dates";
+import { fromDateKey, getStreak, lastDays, toDateKey } from "../utils/dates";
 
 const weekday = new Intl.DateTimeFormat("pt-BR", { weekday: "short" });
 
 export default function ProgressPage() {
-  const { habits, completedCount } = useHabits();
+  const { habits, completedCount, today } = useHabits();
   const total = habits.length;
 
   if (total === 0) {
@@ -17,8 +17,8 @@ export default function ProgressPage() {
   }
 
   const percentage = Math.round((completedCount / total) * 100);
-  const today = toDateKey();
-  const week = lastDays(7).map((day) => {
+  const todayDate = fromDateKey(today);
+  const week = lastDays(7, todayDate).map((day) => {
     const key = toDateKey(day);
     return {
       key,
@@ -27,7 +27,7 @@ export default function ProgressPage() {
     };
   });
   const best = habits
-    .map((habit) => ({ title: habit.title, streak: getStreak(habit.completedDates) }))
+    .map((habit) => ({ title: habit.title, streak: getStreak(habit.completedDates, todayDate) }))
     .sort((a, b) => b.streak - a.streak)[0];
 
   return (

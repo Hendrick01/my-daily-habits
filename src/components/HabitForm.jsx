@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-export default function HabitForm({ onAddHabit }) {
-  const [title, setTitle] = useState("");
-  const [goal, setGoal] = useState("");
+export default function HabitForm({ onSave, onCancel, initialTitle = "", initialGoal = "", submitLabel = "Adicionar hábito" }) {
+  const [title, setTitle] = useState(initialTitle);
+  const [goal, setGoal] = useState(initialGoal);
   const [error, setError] = useState("");
 
   function handleSubmit(event) {
@@ -13,7 +13,7 @@ export default function HabitForm({ onAddHabit }) {
       return;
     }
 
-    onAddHabit(title, goal);
+    onSave(title, goal);
     setTitle("");
     setGoal("");
     setError("");
@@ -51,9 +51,16 @@ export default function HabitForm({ onAddHabit }) {
         </p>
       )}
 
-      <button type="submit" className="btn btn-primary">
-        Adicionar hábito
-      </button>
+      <div className="form-actions">
+        <button type="submit" className="btn btn-primary">
+          {submitLabel}
+        </button>
+        {onCancel && (
+          <button type="button" className="btn btn-ghost" onClick={onCancel}>
+            Cancelar
+          </button>
+        )}
+      </div>
     </form>
   );
 }

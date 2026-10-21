@@ -15,8 +15,10 @@ export default function AboutPage() {
         <ul>
           <li>Marcar hábitos como feitos: a lista recomeça sozinha a cada dia.</li>
           <li>Acompanhar sequências 🔥 de dias seguidos e o histórico da semana.</li>
+          <li>Corrigir dias passados, editar e excluir hábitos.</li>
           <li>Ver o progresso do dia e dos últimos 7 dias.</li>
-          <li>Buscar sugestões numa API e adicioná-las com um clique.</li>
+          <li>Buscar sugestões e adicioná-las com um clique.</li>
+          <li>Fazer backup dos dados num arquivo e restaurar quando quiser.</li>
           <li>Alternar entre tema claro e escuro.</li>
         </ul>
       </div>

@@ -6,6 +6,11 @@ export function toDateKey(date = new Date()) {
   return `${year}-${month}-${day}`;
 }
 
+export function fromDateKey(key) {
+  const [year, month, day] = key.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
 // Os últimos `count` dias, do mais antigo até `from`.
 export function lastDays(count, from = new Date()) {
   return Array.from({ length: count }, (_, index) => {

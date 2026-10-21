@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "node src/utils/dates.test.js"
+    "test": "node src/utils/utils.test.js"
   },
   "dependencies": {
     "react": "^19.2.8",
