@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "node src/utils/utils.test.js"
+    "test": "node src/utils/utils.test.js",
+    "test:e2e": "vite build && node tests/e2e.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

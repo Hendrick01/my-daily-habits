@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { useHabits } from "../context/useHabits";
-import { fromDateKey, getStreak } from "../utils/dates";
+import { fromDateKey } from "../utils/dates";
+import { describeSchedule, getStreak, streakUnit } from "../utils/schedule";
 
-export default function HabitCard({ id, title, goal = "Sem meta definida", emoji, completed, completedDates }) {
+export default function HabitCard({ id, title, goal = "Sem meta definida", emoji, schedule, completed, completedDates, weekCount }) {
   const { toggleHabit, today } = useHabits();
-  const streak = getStreak(completedDates, fromDateKey(today));
+  const streak = getStreak({ schedule, completedDates }, fromDateKey(today));
 
   return (
     <article className={`habit-card${completed ? " is-complete" : ""}`}>
@@ -32,7 +33,12 @@ export default function HabitCard({ id, title, goal = "Sem meta definida", emoji
         <div className="habit-meta">
           {streak > 0 && (
             <span className="streak" title="Dias seguidos">
-              🔥 {streak} {streak === 1 ? "dia" : "dias"}
+              🔥 {streak} {streakUnit(schedule, streak)}
+            </span>
+          )}
+          {schedule.type !== "daily" && (
+            <span className="schedule-tag">
+              {schedule.type === "weekly" ? `${weekCount}/${schedule.times} esta semana` : describeSchedule(schedule)}
             </span>
           )}
           <Link to={`/habitos/${id}`} className="card-link">

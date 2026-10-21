@@ -55,19 +55,22 @@ npm run preview
 
 O endereço aparece no terminal, normalmente `http://localhost:4173`.
 
-Verificar o código com o lint e rodar os testes:
+## Testes
 
 ```bash
-npm run lint
-npm test
+npm run lint       # lint
+npm test           # regras de datas, frequência e limpeza de dados (Node puro)
+npm run test:e2e   # build + testes no navegador (precisa do Google Chrome instalado)
 ```
+
+Os testes no navegador sobem o `vite preview` e controlam o Chrome em modo headless, sem dependências extras. Para rodar contra o site publicado: `E2E_URL=https://my-daily-habits.vercel.app node tests/e2e.mjs`. O GitHub Actions roda os três a cada push.
 
 ## Funcionalidades
 
 | Rota | O que faz |
 | --- | --- |
-| `/` | Saudação, barra de progresso, o contador "X de Y hábitos concluídos." e a lista do dia |
-| `/novo` | Cadastro com validação, ícone opcional e ideias rápidas de um clique; após cadastrar, volta para o início |
+| `/` | Saudação, barra de progresso, o contador "X de Y hábitos concluídos." e só o que está programado para hoje |
+| `/novo` | Cadastro com validação, frequência, ícone opcional e ideias rápidas de um clique; após cadastrar, volta para o início |
 | `/habitos` | Lista completa com filtro (todos, pendentes, concluídos) e backup dos dados |
 | `/habitos/:habitId` | Detalhe: sequência atual e recorde, últimos 7 dias (clicáveis), calendário de 16 semanas, editar e excluir |
 | `/progresso` | Anel de porcentagem, gráfico da semana e maior sequência; sem hábitos, redireciona para `/novo` |
@@ -78,6 +81,7 @@ npm test
 Além disso:
 
 - Cada hábito guarda os dias em que foi feito: a lista recomeça sozinha a cada dia, inclusive com o app aberto na virada da meia-noite.
+- Frequência por hábito: todo dia, dias da semana (ex.: seg, qua, sex) ou N vezes por semana. A sequência conta os dias programados, ou as semanas em que a meta foi batida.
 - Dá para marcar ou desmarcar dias passados, para corrigir um esquecimento.
 - Os hábitos ficam salvos no navegador (`localStorage`); o backup exporta e importa tudo num arquivo JSON.
 - Se os dados salvos estiverem corrompidos, o app volta aos hábitos iniciais sem quebrar a tela.

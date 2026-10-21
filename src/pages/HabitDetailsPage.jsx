@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useHabits } from "../context/useHabits";
 import HabitForm from "../components/HabitForm";
-import { fromDateKey, getBestStreak, getStreak, lastDays, toDateKey } from "../utils/dates";
+import { fromDateKey, lastDays, toDateKey } from "../utils/dates";
+import { describeSchedule, getBestStreak, getStreak, isOffDay, streakUnit } from "../utils/schedule";
 
 const HEATMAP_WEEKS = 16;
 const weekday = new Intl.DateTimeFormat("pt-BR", { weekday: "short" });
@@ -10,7 +11,7 @@ const longDate = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numer
 const shortDate = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short" });
 
 // Grade estilo GitHub: uma coluna por semana, começando num domingo.
-function Heatmap({ done, today }) {
+function Heatmap({ done, today, schedule }) {
   const days = lastDays((HEATMAP_WEEKS - 1) * 7 + today.getDay() + 1, today);
   const doneCount = days.filter((day) => done.has(toDateKey(day))).length;
   const summary = `${doneCount} de ${days.length} dias nas últimas ${HEATMAP_WEEKS} semanas`;
@@ -23,7 +24,7 @@ function Heatmap({ done, today }) {
           return (
             <span
               key={key}
-              className={`heat-cell${done.has(key) ? " is-done" : ""}`}
+              className={`heat-cell${done.has(key) ? " is-done" : isOffDay(schedule, day) ? " is-off" : ""}`}
               title={`${shortDate.format(day)}${done.has(key) ? " ✓" : ""}`}
             />
           );
@@ -52,8 +53,8 @@ export default function HabitDetailsPage() {
     );
   }
 
-  function handleSave(title, goal, emoji) {
-    updateHabit(habit.id, title, goal, emoji);
+  function handleSave(title, goal, emoji, schedule) {
+    updateHabit(habit.id, title, goal, emoji, schedule);
     setEditing(false);
   }
 
@@ -68,6 +69,8 @@ export default function HabitDetailsPage() {
 
   const todayDate = fromDateKey(today);
   const done = new Set(habit.completedDates);
+  const streak = getStreak(habit, todayDate);
+  const best = getBestStreak(habit, todayDate);
 
   return (
     <article className="card">
@@ -76,6 +79,7 @@ export default function HabitDetailsPage() {
           initialTitle={habit.title}
           initialGoal={habit.goal ?? ""}
           initialEmoji={habit.emoji ?? ""}
+          initialSchedule={habit.schedule}
           submitLabel="Salvar alterações"
           onSave={handleSave}
           onCancel={() => setEditing(false)}
@@ -92,6 +96,10 @@ export default function HabitDetailsPage() {
               {habit.title}
             </h2>
             <p className="muted">Meta: {habit.goal || "Sem meta definida"}</p>
+            <p className="muted">
+              Frequência: {describeSchedule(habit.schedule)}
+              {habit.schedule.type === "weekly" && ` · ${habit.weekCount}/${habit.schedule.times} esta semana`}
+            </p>
           </div>
           <span className={`habit-status${habit.completed ? " is-done" : ""}`}>
             Status: {habit.completed ? "Concluído" : "Pendente"}
@@ -101,12 +109,12 @@ export default function HabitDetailsPage() {
 
       <div className="stats">
         <div className="stat">
-          <strong>🔥 {getStreak(habit.completedDates, todayDate)}</strong>
-          <span>dias seguidos</span>
+          <strong>🔥 {streak}</strong>
+          <span>{habit.schedule.type === "weekly" ? "semanas seguidas na meta" : "dias seguidos"}</span>
         </div>
         <div className="stat">
-          <strong>🏆 {getBestStreak(habit.completedDates)}</strong>
-          <span>melhor sequência</span>
+          <strong>🏆 {best}</strong>
+          <span>melhor sequência ({streakUnit(habit.schedule, best)})</span>
         </div>
         <div className="stat">
           <strong>{habit.completedDates.length}</strong>
@@ -123,7 +131,7 @@ export default function HabitDetailsPage() {
             <li key={key} className="week-day">
               <button
                 type="button"
-                className={`week-dot${done.has(key) ? " is-done" : ""}`}
+                className={`week-dot${done.has(key) ? " is-done" : isOffDay(habit.schedule, day) ? " is-off" : ""}`}
                 aria-pressed={done.has(key)}
                 aria-label={longDate.format(day)}
                 onClick={() => toggleHabit(habit.id, key)}
@@ -135,7 +143,7 @@ export default function HabitDetailsPage() {
       </ol>
 
       <h3 className="section-gap">Histórico</h3>
-      <Heatmap done={done} today={todayDate} />
+      <Heatmap done={done} today={todayDate} schedule={habit.schedule} />
 
       <div className="actions">
         <button type="button" className="btn btn-primary" onClick={() => toggleHabit(habit.id)}>

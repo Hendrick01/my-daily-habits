@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { initialHabits } from "../data/habits";
 import { HabitsContext } from "./useHabits";
-import { toDateKey } from "../utils/dates";
+import { fromDateKey, toDateKey } from "../utils/dates";
 import { sanitizeHabits } from "../utils/habits";
+import { DAILY, getWeekCount, isDueToday } from "../utils/schedule";
 
 const STORAGE_KEY = "my-daily-habits:habits";
 
@@ -21,8 +22,16 @@ export function HabitsProvider({ children }) {
   const [habits, setHabits] = useState(loadHabits);
   const [today, setToday] = useState(toDateKey);
 
-  const habitsToday = habits.map((habit) => ({ ...habit, completed: habit.completedDates.includes(today) }));
-  const completedCount = habitsToday.filter((habit) => habit.completed).length;
+  const todayDate = fromDateKey(today);
+  const habitsToday = habits.map((habit) => ({
+    ...habit,
+    completed: habit.completedDates.includes(today),
+    dueToday: isDueToday(habit, todayDate),
+    weekCount: getWeekCount(habit, todayDate),
+  }));
+  // "Hoje" conta só o que está programado para hoje.
+  const dueCount = habitsToday.filter((habit) => habit.dueToday).length;
+  const completedCount = habitsToday.filter((habit) => habit.dueToday && habit.completed).length;
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
@@ -30,12 +39,12 @@ export function HabitsProvider({ children }) {
 
   useEffect(() => {
     const originalTitle = document.title;
-    document.title = `${completedCount}/${habits.length} hábitos concluídos`;
+    document.title = `${completedCount}/${dueCount} hábitos concluídos`;
 
     return () => {
       document.title = originalTitle;
     };
-  }, [completedCount, habits.length]);
+  }, [completedCount, dueCount]);
 
   // Vira o dia sozinho: confere a data a cada minuto e quando a aba volta a ficar visível.
   useEffect(() => {
@@ -62,20 +71,21 @@ export function HabitsProvider({ children }) {
     }));
   }
 
-  function addHabit(title, goal, emoji) {
+  function addHabit(title, goal, emoji, schedule = DAILY) {
     const newHabit = {
       id: crypto.randomUUID(),
       title: title.trim(),
       goal: goal.trim(),
       emoji,
+      schedule,
       completedDates: [],
     };
 
     setHabits((currentHabits) => [...currentHabits, newHabit]);
   }
 
-  function updateHabit(habitId, title, goal, emoji) {
-    updateWhere(habitId, (habit) => ({ ...habit, title: title.trim(), goal: goal.trim(), emoji }));
+  function updateHabit(habitId, title, goal, emoji, schedule) {
+    updateWhere(habitId, (habit) => ({ ...habit, title: title.trim(), goal: goal.trim(), emoji, schedule }));
   }
 
   function removeHabit(habitId) {
@@ -89,6 +99,7 @@ export function HabitsProvider({ children }) {
   const value = {
     habits: habitsToday,
     completedCount,
+    dueCount,
     today,
     toggleHabit,
     addHabit,

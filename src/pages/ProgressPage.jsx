@@ -1,10 +1,11 @@
 import { useHabits } from "../context/useHabits";
-import { fromDateKey, getStreak, lastDays, toDateKey } from "../utils/dates";
+import { fromDateKey, lastDays, toDateKey } from "../utils/dates";
+import { getStreak, streakUnit } from "../utils/schedule";
 
 const weekday = new Intl.DateTimeFormat("pt-BR", { weekday: "short" });
 
 export default function ProgressPage() {
-  const { habits, completedCount, today } = useHabits();
+  const { habits, completedCount, dueCount, today } = useHabits();
   const total = habits.length;
 
   if (total === 0) {
@@ -16,7 +17,8 @@ export default function ProgressPage() {
     );
   }
 
-  const percentage = Math.round((completedCount / total) * 100);
+  // Sem nada programado para hoje, o dia está "completo".
+  const percentage = dueCount === 0 ? 100 : Math.round((completedCount / dueCount) * 100);
   const todayDate = fromDateKey(today);
   const week = lastDays(7, todayDate).map((day) => {
     const key = toDateKey(day);
@@ -27,7 +29,7 @@ export default function ProgressPage() {
     };
   });
   const best = habits
-    .map((habit) => ({ title: habit.title, streak: getStreak(habit.completedDates, todayDate) }))
+    .map((habit) => ({ title: habit.title, schedule: habit.schedule, streak: getStreak(habit, todayDate) }))
     .sort((a, b) => b.streak - a.streak)[0];
 
   return (
@@ -46,7 +48,7 @@ export default function ProgressPage() {
             </div>
           </div>
           <p>
-            {completedCount} de {total} hábitos concluídos.
+            {dueCount === 0 ? "Nada programado para hoje." : `${completedCount} de ${dueCount} hábitos concluídos.`}
           </p>
         </section>
 
@@ -65,7 +67,7 @@ export default function ProgressPage() {
           </div>
           {best.streak > 0 && (
             <p className="muted">
-              Maior sequência: 🔥 {best.streak} {best.streak === 1 ? "dia" : "dias"} em “{best.title}”
+              Maior sequência: 🔥 {best.streak} {streakUnit(best.schedule, best.streak)} em “{best.title}”
             </p>
           )}
         </section>

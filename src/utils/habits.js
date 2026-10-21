@@ -1,3 +1,5 @@
+import { sanitizeSchedule } from "./schedule.js";
+
 const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/;
 
 function isHabit(value) {
@@ -19,6 +21,7 @@ export function sanitizeHabits(list, today) {
         title: habit.title,
         goal: typeof habit.goal === "string" && habit.goal.trim() ? habit.goal : undefined,
         emoji: typeof habit.emoji === "string" && habit.emoji.length <= 16 ? habit.emoji : undefined,
+        schedule: sanitizeSchedule(habit.schedule),
         completedDates: [...new Set(dates.filter((date) => typeof date === "string" && DATE_KEY.test(date)))].sort(),
       };
     });

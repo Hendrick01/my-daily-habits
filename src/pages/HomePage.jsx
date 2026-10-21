@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Panel from "../components/Panel";
 import HabitList from "../components/HabitList";
 import { useHabits } from "../context/useHabits";
@@ -13,8 +14,9 @@ function greeting(hour) {
 }
 
 export default function HomePage() {
-  const { habits, completedCount, today } = useHabits();
-  const total = habits.length;
+  const { habits, completedCount, dueCount, today } = useHabits();
+  const total = dueCount;
+  const offToday = habits.length - dueCount;
   const percentage = total === 0 ? 0 : Math.round((completedCount / total) * 100);
   const [hour] = useState(() => new Date().getHours());
 
@@ -42,7 +44,12 @@ export default function HomePage() {
       </section>
 
       <Panel title="Hábitos de hoje">
-        <HabitList />
+        <HabitList filter="today" />
+        {offToday > 0 && (
+          <p className="muted off-today">
+            + {offToday} {offToday === 1 ? "hábito fora de hoje" : "hábitos fora de hoje"} · <Link to="/habitos">ver todos</Link>
+          </p>
+        )}
       </Panel>
     </>
   );

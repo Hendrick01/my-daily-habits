@@ -1,0 +1,19 @@
+{
+    "app": "my-daily-habits",
+    "version": 1,
+    "habits": [
+        {
+            "id": "i1",
+            "title": "Importado A",
+            "goal": "1x",
+            "completedDates": [
+                "2026-10-20"
+            ]
+        },
+        {
+            "id": "i2",
+            "title": "Importado B",
+            "completed": true
+        }
+    ]
+}

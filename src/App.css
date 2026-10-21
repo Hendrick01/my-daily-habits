@@ -300,6 +300,20 @@
   font-weight: 600;
 }
 
+.schedule-tag {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.off-today {
+  margin: 12px 0 0;
+  font-size: 0.9rem;
+}
+
 .card-link {
   font-size: 0.85rem;
   font-weight: 500;
@@ -427,15 +441,85 @@
   font-weight: 500;
 }
 
-.emoji-field {
+.plain-fieldset {
   margin: 0;
   padding: 0;
   border: 0;
 }
 
-.emoji-field legend {
+.plain-fieldset legend {
   margin-bottom: 6px;
   padding: 0;
+}
+
+.plain-fieldset .segmented {
+  flex-wrap: wrap;
+  margin-bottom: 0;
+}
+
+.segmented label {
+  padding: 6px 14px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.segmented label:has(input:checked) {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.segmented label:has(input:focus-visible),
+.day-option:has(input:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.day-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.day-option {
+  display: grid;
+  place-items: center;
+  min-width: 48px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--bg);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.day-option:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--on-primary);
+}
+
+.times-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  font-weight: 500;
+}
+
+.times-field input {
+  width: 72px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
 }
 
 .emoji-picker {
@@ -707,6 +791,11 @@
 
 .week-dot:active {
   transform: scale(0.9);
+}
+
+.week-dot.is-off,
+.heat-cell.is-off {
+  opacity: 0.35;
 }
 
 .week-dot.is-done {

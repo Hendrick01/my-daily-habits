@@ -10,9 +10,10 @@ const filters = [
 ];
 
 export default function HabitsPage() {
-  const { habits, completedCount } = useHabits();
+  const { habits } = useHabits();
+  const doneCount = habits.filter((habit) => habit.completed).length;
   const [filter, setFilter] = useState("all");
-  const counts = { all: habits.length, pending: habits.length - completedCount, done: completedCount };
+  const counts = { all: habits.length, pending: habits.length - doneCount, done: doneCount };
 
   return (
     <>
