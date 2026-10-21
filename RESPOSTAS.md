@@ -51,6 +51,9 @@ O `habitId` que o hook `useParams()` extrai chega sempre como texto (`string`), 
 ## M4 — O que a prop `replace` muda no `Navigate`?
 
 **Resposta:**
+A prop `replace` substitui a entrada atual no histórico de navegação do navegador em vez de adicionar uma nova. 
+* Sem o `replace`: o navegador salva que você passou por `/progresso` e foi para `/novo`. Se você clicar no botão de "Voltar" do navegador na página `/novo`, ele tenta te levar para `/progresso`, que te expulsa imediatamente de volta para `/novo`. O usuário fica preso num "loop" no histórico.
+* Com o `replace`: a rota `/progresso` não é gravada no histórico. O redirecionamento sobrescreve o acesso atual. Assim, ao clicar em "Voltar" a partir de `/novo`, o usuário retorna corretamente para a página em que estava antes de tentar acessar `/progresso`.
 
 **Fonte:**
 
