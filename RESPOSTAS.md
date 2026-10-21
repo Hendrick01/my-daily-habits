@@ -28,8 +28,11 @@ Isso vale ponto parcial. Deixar em branco não vale nada.
 ## M2 — O que `useParams` devolve num segmento que parece número?
 
 **Resposta:**
+O `habitId` que o hook `useParams()` extrai chega sempre como texto (`string`), porque as URLs web são fundamentalmente cadeias de caracteres. No meu projeto, os IDs ("water" e os gerados pelo `crypto.randomUUID()`) também são originalmente `string`. Por conta disso, posso compará-los usando igualdade estrita (`h.id === habitId`) sem sofrer com bugs de tipo e sem precisar converter valores.
 
 **Fonte:**
+- https://reactrouter.com/api/hooks/useParams
+- MDN: Array.prototype.find()
 
 **No meu código:**
 
