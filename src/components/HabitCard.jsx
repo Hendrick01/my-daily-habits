@@ -1,5 +1,6 @@
 import { useContext } from "react";
 import { HabitsContext } from "../context/HabitsContext";
+import { Link } from "react-router-dom";
 
 export default function HabitCard({ id, title, goal = "Sem meta definida", completed }) {
   const context = useContext(HabitsContext);
@@ -25,6 +26,8 @@ export default function HabitCard({ id, title, goal = "Sem meta definida", compl
       >
         {completed ? "Desmarcar" : "Concluir"}
       </button>
+
+<Link to={`/habitos/${id}`}>Ver detalhes</Link>
     </article>
   );
 }

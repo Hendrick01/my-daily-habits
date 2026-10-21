@@ -7,6 +7,7 @@ import AboutPage from "./pages/AboutPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import HabitsLayout from "./layouts/HabitsLayout";
 import HabitsPage from "./pages/HabitsPage";
+import HabitDetailsPage from "./pages/HabitDetailsPage";
 
 export default function App() {
   return (
@@ -15,10 +16,10 @@ export default function App() {
         {/* Índice (página inicial) */}
         <Route index element={<HomePage />} />
         
-        {/* Rotas aninhadas de Hábitos */}
-        <Route path="habitos" element={<HabitsLayout />}>
-          <Route index element={<HabitsPage />} />
-        </Route>
+       <Route path="habitos" element={<HabitsLayout />}>
+  <Route index element={<HabitsPage />} />
+  <Route path=":habitId" element={<HabitDetailsPage />} />
+</Route>
 
         {/* Outras rotas */}
         <Route path="novo" element={<NewHabitPage />} />
