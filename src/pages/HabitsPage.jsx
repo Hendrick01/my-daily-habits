@@ -3,7 +3,7 @@ import HabitList from "../components/HabitList";
 
 export default function HabitsPage() {
   return (
-        <Panel title="Lista completa">
+    <Panel title="Lista completa">
       <HabitList />
     </Panel>
   );

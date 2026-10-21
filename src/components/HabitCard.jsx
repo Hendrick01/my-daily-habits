@@ -26,8 +26,7 @@ export default function HabitCard({ id, title, goal = "Sem meta definida", compl
       >
         {completed ? "Desmarcar" : "Concluir"}
       </button>
-
-<Link to={`/habitos/${id}`}>Ver detalhes</Link>
+      <Link to={`/habitos/${id}`}>Ver detalhes</Link>
     </article>
   );
 }

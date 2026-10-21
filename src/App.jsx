@@ -15,11 +15,11 @@ export default function App() {
       <Route path="/" element={<AppLayout />}>
         {/* Índice (página inicial) */}
         <Route index element={<HomePage />} />
-        
-       <Route path="habitos" element={<HabitsLayout />}>
-  <Route index element={<HabitsPage />} />
-  <Route path=":habitId" element={<HabitDetailsPage />} />
-</Route>
+
+        <Route path="habitos" element={<HabitsLayout />}>
+          <Route index element={<HabitsPage />} />
+          <Route path=":habitId" element={<HabitDetailsPage />} />
+        </Route>
 
         {/* Outras rotas */}
         <Route path="novo" element={<NewHabitPage />} />
