@@ -1,9 +1,21 @@
 import { useState } from "react";
 
-export default function HabitForm({ onSave, onCancel, initialTitle = "", initialGoal = "", submitLabel = "Adicionar hábito" }) {
+const EMOJIS = ["💧", "📖", "🧘", "🏃", "🍎", "💤", "✍️", "🎯", "💪", "🧹", "🎸", "🌱"];
+
+export default function HabitForm({
+  onSave,
+  onCancel,
+  initialTitle = "",
+  initialGoal = "",
+  initialEmoji = "",
+  submitLabel = "Adicionar hábito",
+}) {
   const [title, setTitle] = useState(initialTitle);
   const [goal, setGoal] = useState(initialGoal);
+  const [emoji, setEmoji] = useState(initialEmoji);
   const [error, setError] = useState("");
+
+  const emojiOptions = ["", ...new Set([initialEmoji, ...EMOJIS].filter(Boolean))];
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -13,9 +25,10 @@ export default function HabitForm({ onSave, onCancel, initialTitle = "", initial
       return;
     }
 
-    onSave(title, goal);
+    onSave(title, goal, emoji || undefined);
     setTitle("");
     setGoal("");
+    setEmoji("");
     setError("");
   }
 
@@ -44,6 +57,25 @@ export default function HabitForm({ onSave, onCancel, initialTitle = "", initial
           onChange={(event) => setGoal(event.target.value)}
         />
       </label>
+
+      <fieldset className="field emoji-field">
+        <legend>Ícone (opcional)</legend>
+        <div className="emoji-picker">
+          {emojiOptions.map((option) => (
+            <label key={option || "none"} className="emoji-option">
+              <input
+                type="radio"
+                name="emoji"
+                className="sr-only"
+                checked={emoji === option}
+                onChange={() => setEmoji(option)}
+                aria-label={option ? `Ícone ${option}` : "Sem ícone"}
+              />
+              <span aria-hidden="true">{option || "—"}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       {error && (
         <p className="form-error" role="alert">

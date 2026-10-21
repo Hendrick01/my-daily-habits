@@ -67,9 +67,9 @@ npm test
 | Rota | O que faz |
 | --- | --- |
 | `/` | Saudação, barra de progresso, o contador "X de Y hábitos concluídos." e a lista do dia |
-| `/novo` | Cadastro com validação e ideias rápidas de um clique; após cadastrar, volta para o início |
+| `/novo` | Cadastro com validação, ícone opcional e ideias rápidas de um clique; após cadastrar, volta para o início |
 | `/habitos` | Lista completa com filtro (todos, pendentes, concluídos) e backup dos dados |
-| `/habitos/:habitId` | Detalhe: sequência, total de dias, últimos 7 dias (clicáveis), editar e excluir |
+| `/habitos/:habitId` | Detalhe: sequência atual e recorde, últimos 7 dias (clicáveis), calendário de 16 semanas, editar e excluir |
 | `/progresso` | Anel de porcentagem, gráfico da semana e maior sequência; sem hábitos, redireciona para `/novo` |
 | `/sugestoes` | Sorteia 6 sugestões de hábitos ao clicar no botão, com opção de adicionar |
 | `/sobre` | Sobre o projeto |
@@ -82,6 +82,7 @@ Além disso:
 - Os hábitos ficam salvos no navegador (`localStorage`); o backup exporta e importa tudo num arquivo JSON.
 - Se os dados salvos estiverem corrompidos, o app volta aos hábitos iniciais sem quebrar a tela.
 - Tema claro e escuro, que segue o sistema e lembra a escolha.
+- Instalável como app (PWA) no celular e no computador; depois da primeira visita, abre sem internet.
 - O título da aba mostra o progresso, no formato "X/Y hábitos concluídos".
 
 ## Tecnologias

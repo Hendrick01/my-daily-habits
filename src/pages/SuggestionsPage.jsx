@@ -62,7 +62,10 @@ export default function SuggestionsPage() {
                 const added = myTitles.has(item.title.toLowerCase());
                 return (
                   <li key={item.id} className="suggestion">
-                    <div>
+                    <span className="habit-emoji" aria-hidden="true">
+                      {item.emoji}
+                    </span>
+                    <div className="suggestion-info">
                       <strong>{item.title}</strong>
                       <p className="muted">Meta: {item.goal}</p>
                     </div>
@@ -70,7 +73,7 @@ export default function SuggestionsPage() {
                       type="button"
                       className="btn btn-ghost btn-sm"
                       disabled={added}
-                      onClick={() => addHabit(item.title, item.goal)}
+                      onClick={() => addHabit(item.title, item.goal, item.emoji)}
                     >
                       {added ? "Adicionado ✓" : "+ Adicionar"}
                     </button>

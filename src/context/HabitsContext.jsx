@@ -62,19 +62,20 @@ export function HabitsProvider({ children }) {
     }));
   }
 
-  function addHabit(title, goal) {
+  function addHabit(title, goal, emoji) {
     const newHabit = {
       id: crypto.randomUUID(),
       title: title.trim(),
       goal: goal.trim(),
+      emoji,
       completedDates: [],
     };
 
     setHabits((currentHabits) => [...currentHabits, newHabit]);
   }
 
-  function updateHabit(habitId, title, goal) {
-    updateWhere(habitId, (habit) => ({ ...habit, title: title.trim(), goal: goal.trim() }));
+  function updateHabit(habitId, title, goal, emoji) {
+    updateWhere(habitId, (habit) => ({ ...habit, title: title.trim(), goal: goal.trim(), emoji }));
   }
 
   function removeHabit(habitId) {

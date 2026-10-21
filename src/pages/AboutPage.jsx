@@ -19,7 +19,9 @@ export default function AboutPage() {
           <li>Ver o progresso do dia e dos últimos 7 dias.</li>
           <li>Buscar sugestões e adicioná-las com um clique.</li>
           <li>Fazer backup dos dados num arquivo e restaurar quando quiser.</li>
+          <li>Dar um ícone para cada hábito e ver o histórico de 16 semanas.</li>
           <li>Alternar entre tema claro e escuro.</li>
+          <li>Instalar como app e usar sem internet.</li>
         </ul>
       </div>
     </>

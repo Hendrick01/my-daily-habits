@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useHabits } from "../context/useHabits";
 import { fromDateKey, getStreak } from "../utils/dates";
 
-export default function HabitCard({ id, title, goal = "Sem meta definida", completed, completedDates }) {
+export default function HabitCard({ id, title, goal = "Sem meta definida", emoji, completed, completedDates }) {
   const { toggleHabit, today } = useHabits();
   const streak = getStreak(completedDates, fromDateKey(today));
 
@@ -19,6 +19,12 @@ export default function HabitCard({ id, title, goal = "Sem meta definida", compl
           <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
+
+      {emoji && (
+        <span className="habit-emoji" aria-hidden="true">
+          {emoji}
+        </span>
+      )}
 
       <div className="habit-info">
         <h2>{title}</h2>

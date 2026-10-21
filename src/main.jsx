@@ -14,3 +14,8 @@ createRoot(document.getElementById("root")).render(
     </BrowserRouter>
   </StrictMode>
 );
+
+// Só em produção: em desenvolvimento o service worker atrapalharia o recarregamento do Vite.
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js");
+}

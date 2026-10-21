@@ -12,7 +12,7 @@ export default function BackupPanel() {
       app: "my-daily-habits",
       version: 1,
       exportedAt: new Date().toISOString(),
-      habits: habits.map(({ id, title, goal, completedDates }) => ({ id, title, goal, completedDates })),
+      habits: habits.map(({ id, title, goal, emoji, completedDates }) => ({ id, title, goal, emoji, completedDates })),
     };
     const url = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" }));
     const link = document.createElement("a");

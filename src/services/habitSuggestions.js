@@ -28,5 +28,6 @@ export async function fetchSuggestions() {
     id: String(item.id),
     title: item.title,
     goal: item.goal,
+    emoji: item.emoji,
   }));
 }

@@ -20,6 +20,21 @@ export function lastDays(count, from = new Date()) {
   });
 }
 
+// Maior sequência de dias seguidos de todo o histórico.
+export function getBestStreak(completedDates) {
+  let best = 0;
+  let run = 0;
+  let expected = null;
+  for (const key of [...new Set(completedDates)].sort()) {
+    run = key === expected ? run + 1 : 1;
+    best = Math.max(best, run);
+    const next = fromDateKey(key);
+    next.setDate(next.getDate() + 1);
+    expected = toDateKey(next);
+  }
+  return best;
+}
+
 // Dias seguidos feitos. Se hoje ainda está pendente, a sequência de ontem continua valendo.
 export function getStreak(completedDates, today = new Date()) {
   const done = new Set(completedDates);

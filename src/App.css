@@ -252,7 +252,19 @@
   height: 18px;
 }
 
-.habit-info {
+.habit-emoji {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  font-size: 1.3rem;
+}
+
+.habit-info,
+.suggestion-info {
   flex: 1;
   min-width: 0;
 }
@@ -413,6 +425,53 @@
   margin: 0;
   color: var(--danger);
   font-weight: 500;
+}
+
+.emoji-field {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.emoji-field legend {
+  margin-bottom: 6px;
+  padding: 0;
+}
+
+.emoji-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.emoji-option {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--muted);
+  font-size: 1.2rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+}
+
+.emoji-option:hover {
+  border-color: var(--primary);
+}
+
+.emoji-option:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.emoji-option:has(input:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
 }
 
 .form-actions {
@@ -662,6 +721,42 @@
 
 .hint {
   margin: -4px 0 10px;
+  font-size: 0.85rem;
+}
+
+.detail-emoji {
+  margin-right: 8px;
+}
+
+.card .section-gap {
+  margin-top: 24px;
+}
+
+.heatmap {
+  margin: 0;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-auto-columns: 14px;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, 14px);
+  gap: 3px;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.heat-cell {
+  border-radius: 3px;
+  background: var(--surface-2);
+}
+
+.heat-cell.is-done {
+  background: var(--primary);
+}
+
+.heatmap figcaption {
+  margin-top: 8px;
   font-size: 0.85rem;
 }
 

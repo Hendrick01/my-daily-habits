@@ -18,6 +18,7 @@ export function sanitizeHabits(list, today) {
         id: habit.id,
         title: habit.title,
         goal: typeof habit.goal === "string" && habit.goal.trim() ? habit.goal : undefined,
+        emoji: typeof habit.emoji === "string" && habit.emoji.length <= 16 ? habit.emoji : undefined,
         completedDates: [...new Set(dates.filter((date) => typeof date === "string" && DATE_KEY.test(date)))].sort(),
       };
     });

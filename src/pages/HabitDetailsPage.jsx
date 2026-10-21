@@ -2,10 +2,37 @@ import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useHabits } from "../context/useHabits";
 import HabitForm from "../components/HabitForm";
-import { fromDateKey, getStreak, lastDays, toDateKey } from "../utils/dates";
+import { fromDateKey, getBestStreak, getStreak, lastDays, toDateKey } from "../utils/dates";
 
+const HEATMAP_WEEKS = 16;
 const weekday = new Intl.DateTimeFormat("pt-BR", { weekday: "short" });
 const longDate = new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long" });
+const shortDate = new Intl.DateTimeFormat("pt-BR", { day: "numeric", month: "short" });
+
+// Grade estilo GitHub: uma coluna por semana, começando num domingo.
+function Heatmap({ done, today }) {
+  const days = lastDays((HEATMAP_WEEKS - 1) * 7 + today.getDay() + 1, today);
+  const doneCount = days.filter((day) => done.has(toDateKey(day))).length;
+  const summary = `${doneCount} de ${days.length} dias nas últimas ${HEATMAP_WEEKS} semanas`;
+
+  return (
+    <figure className="heatmap">
+      <div className="heatmap-grid" role="img" aria-label={summary}>
+        {days.map((day) => {
+          const key = toDateKey(day);
+          return (
+            <span
+              key={key}
+              className={`heat-cell${done.has(key) ? " is-done" : ""}`}
+              title={`${shortDate.format(day)}${done.has(key) ? " ✓" : ""}`}
+            />
+          );
+        })}
+      </div>
+      <figcaption className="muted">{summary}</figcaption>
+    </figure>
+  );
+}
 
 export default function HabitDetailsPage() {
   const { habits, today, toggleHabit, updateHabit, removeHabit } = useHabits();
@@ -25,8 +52,8 @@ export default function HabitDetailsPage() {
     );
   }
 
-  function handleSave(title, goal) {
-    updateHabit(habit.id, title, goal);
+  function handleSave(title, goal, emoji) {
+    updateHabit(habit.id, title, goal, emoji);
     setEditing(false);
   }
 
@@ -48,6 +75,7 @@ export default function HabitDetailsPage() {
         <HabitForm
           initialTitle={habit.title}
           initialGoal={habit.goal ?? ""}
+          initialEmoji={habit.emoji ?? ""}
           submitLabel="Salvar alterações"
           onSave={handleSave}
           onCancel={() => setEditing(false)}
@@ -55,7 +83,14 @@ export default function HabitDetailsPage() {
       ) : (
         <div className="detail-head">
           <div>
-            <h2>{habit.title}</h2>
+            <h2>
+              {habit.emoji && (
+                <span className="detail-emoji" aria-hidden="true">
+                  {habit.emoji}
+                </span>
+              )}
+              {habit.title}
+            </h2>
             <p className="muted">Meta: {habit.goal || "Sem meta definida"}</p>
           </div>
           <span className={`habit-status${habit.completed ? " is-done" : ""}`}>
@@ -68,6 +103,10 @@ export default function HabitDetailsPage() {
         <div className="stat">
           <strong>🔥 {getStreak(habit.completedDates, todayDate)}</strong>
           <span>dias seguidos</span>
+        </div>
+        <div className="stat">
+          <strong>🏆 {getBestStreak(habit.completedDates)}</strong>
+          <span>melhor sequência</span>
         </div>
         <div className="stat">
           <strong>{habit.completedDates.length}</strong>
@@ -94,6 +133,9 @@ export default function HabitDetailsPage() {
           );
         })}
       </ol>
+
+      <h3 className="section-gap">Histórico</h3>
+      <Heatmap done={done} today={todayDate} />
 
       <div className="actions">
         <button type="button" className="btn btn-primary" onClick={() => toggleHabit(habit.id)}>

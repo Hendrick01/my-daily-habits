@@ -3,20 +3,20 @@ import { useHabits } from "../context/useHabits";
 import HabitForm from "../components/HabitForm";
 
 const ideas = [
-  { title: "Ler", goal: "10 páginas" },
-  { title: "Meditar", goal: "5 minutos" },
-  { title: "Alongar", goal: "10 minutos" },
-  { title: "Dormir cedo", goal: "Antes das 23h" },
-  { title: "Comer uma fruta", goal: "1 por dia" },
-  { title: "Desligar o celular", goal: "1 hora antes de dormir" },
+  { title: "Ler", goal: "10 páginas", emoji: "📖" },
+  { title: "Meditar", goal: "5 minutos", emoji: "🧘" },
+  { title: "Alongar", goal: "10 minutos", emoji: "🤸" },
+  { title: "Dormir cedo", goal: "Antes das 23h", emoji: "💤" },
+  { title: "Comer uma fruta", goal: "1 por dia", emoji: "🍎" },
+  { title: "Desligar o celular", goal: "1 hora antes de dormir", emoji: "📵" },
 ];
 
 export default function NewHabitPage() {
   const { habits, addHabit } = useHabits();
   const navigate = useNavigate();
 
-  function handleAddHabit(title, goal) {
-    addHabit(title, goal);
+  function handleAddHabit(title, goal, emoji) {
+    addHabit(title, goal, emoji);
     navigate("/");
   }
 
@@ -37,8 +37,8 @@ export default function NewHabitPage() {
           <h2>Sem ideias? Toque para adicionar</h2>
           <div className="chips">
             {availableIdeas.map((idea) => (
-              <button key={idea.title} type="button" className="chip" onClick={() => handleAddHabit(idea.title, idea.goal)}>
-                + {idea.title} · {idea.goal}
+              <button key={idea.title} type="button" className="chip" onClick={() => handleAddHabit(idea.title, idea.goal, idea.emoji)}>
+                {idea.emoji} {idea.title} · {idea.goal}
               </button>
             ))}
           </div>
