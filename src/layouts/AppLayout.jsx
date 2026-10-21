@@ -2,7 +2,12 @@ import { NavLink, Outlet } from "react-router-dom";
 
 export default function AppLayout() {
   return (
-    <div className="app-layout">
+    <main className="app">
+      <header className="hero">
+        <p className="eyebrow">MY DAILY HABITS — painel do Hendrick</p>
+        <h1>Pequenos hábitos, progresso visível.</h1>
+      </header>
+
       <nav className="main-nav">
         <ul>
           <li><NavLink to="/" end>Hoje</NavLink></li>
@@ -14,8 +19,7 @@ export default function AppLayout() {
         </ul>
       </nav>
       
-      {/* O Outlet é onde as páginas renderizam o seu conteúdo */}
       <Outlet />
-    </div>
+    </main>
   );
 }

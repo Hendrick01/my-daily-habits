@@ -14,13 +14,9 @@ export default function HomePage() {
 
   return (
     <>
-      <header className="hero">
-        <p className="eyebrow">MY DAILY HABITS</p>
-        <h1>Pequenos hábitos, progresso visível.</h1>
-        <p>
-          {completedCount} de {habits.length} hábitos concluídos.
-        </p>
-      </header>
+      <p>
+        {completedCount} de {habits.length} hábitos concluídos.
+      </p>
 
       <Panel title="Hábitos de hoje">
         <HabitList />
