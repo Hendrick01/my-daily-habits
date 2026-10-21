@@ -1,6 +1,6 @@
 # My Daily Habits — painel do Hendrick
 
-> ✍️ **Escreva aqui, com suas palavras, 2 ou 3 frases:** o que o app faz e para quem ele serve.
+Aplicativo web para acompanhar hábitos diários: você cadastra hábitos com uma meta, marca o que concluiu no dia e acompanha a porcentagem de progresso. É feito para quem quer criar uma rotina e ver a evolução de forma simples, com os dados salvos no próprio navegador e uma página que busca sugestões de hábitos numa API pública. Projeto final do módulo de React da Capacitação em Desenvolvimento Full Stack do ITEAM.
 
 ## Requisitos
 
