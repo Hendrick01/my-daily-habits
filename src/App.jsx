@@ -8,6 +8,8 @@ import NotFoundPage from "./pages/NotFoundPage";
 import HabitsLayout from "./layouts/HabitsLayout";
 import HabitsPage from "./pages/HabitsPage";
 import HabitDetailsPage from "./pages/HabitDetailsPage";
+import ProgressPage from "./pages/ProgressPage";
+import ProtectedProgressRoute from "./components/ProtectedProgressRoute";
 
 export default function App() {
   return (
@@ -23,6 +25,14 @@ export default function App() {
 
         {/* Outras rotas */}
         <Route path="novo" element={<NewHabitPage />} />
+        <Route
+          path="progresso"
+          element={
+            <ProtectedProgressRoute>
+              <ProgressPage />
+            </ProtectedProgressRoute>
+          }
+        />
         <Route path="sobre" element={<AboutPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
