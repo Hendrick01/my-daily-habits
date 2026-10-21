@@ -11,6 +11,7 @@ import HabitDetailsPage from "./pages/HabitDetailsPage";
 import ProgressPage from "./pages/ProgressPage";
 import ProtectedProgressRoute from "./components/ProtectedProgressRoute";
 import SuggestionsPage from "./pages/SuggestionsPage";
+import AccountPage from "./pages/AccountPage";
 
 export default function App() {
   return (
@@ -36,6 +37,7 @@ export default function App() {
         />
         <Route path="sugestoes" element={<SuggestionsPage />} />
         <Route path="sobre" element={<AboutPage />} />
+        <Route path="conta" element={<AccountPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

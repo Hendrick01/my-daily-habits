@@ -286,7 +286,9 @@ test("detalhe: excluir pede confirmação e remove", async () => {
   await expectJs(`document.querySelector(".btn-danger").textContent`, "Confirmar exclusão");
   await js(click(".btn-danger"));
   await expectJs(`location.pathname`, "/habitos");
-  await expectJs(`${saved}.length`, 2);
+  await expectJs(cards, 2);
+  // A exclusão fica guardada como "lápide" para sincronizar com outros aparelhos.
+  await expectJs(`${saved}.find((habit) => habit.id === "walk")?.deleted`, true);
 });
 
 test("id inexistente mostra 'Hábito não encontrado'", async () => {
@@ -366,9 +368,18 @@ test("sem hábitos, /progresso redireciona para /novo", async () => {
 test("alternar tema salva a escolha", async () => {
   await go("/");
   const before = await js(`return document.documentElement.dataset.theme`);
-  await js(click(".icon-button"));
+  await js(click("button.icon-button"));
   await expectJs(`document.documentElement.dataset.theme`, (theme) => theme !== before);
   await expectJs(`localStorage.getItem("my-daily-habits:theme") === document.documentElement.dataset.theme`, true);
+});
+
+test("conta: abre com o formulário de entrar (ou o aviso, sem nuvem)", async () => {
+  await go("/conta");
+  await expectJs(`document.querySelector(".page-head h1")?.textContent`, "Conta");
+  await expectJs(
+    `!!document.querySelector('input[name="email"]') || /não está disponível/.test(document.querySelector(".empty")?.textContent ?? "")`,
+    true,
+  );
 });
 
 test("PWA: manifest e ícones respondem", async () => {

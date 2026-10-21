@@ -31,6 +31,25 @@ cp .env.example .env
 
 O `.env` não vai para o Git. Com a variável vazia (ou sem `.env`), as sugestões vêm do próprio site, do arquivo `public/api/sugestoes.json`, então o projeto funciona mesmo sem essa etapa.
 
+### Sincronização e lembretes (opcional)
+
+Sem as variáveis `VITE_SUPABASE_*`, o app funciona só no navegador. Com elas, ganha conta (e-mail e senha), sincronização entre aparelhos e lembrete diário por notificação. A parte de servidor fica em `supabase/`:
+
+- `migrations/`: tabelas `habits` e `push_subscriptions`, com RLS (cada usuário só acessa as próprias linhas) e o agendamento a cada 5 minutos.
+- `functions/send-reminders/`: envia os lembretes por Web Push. Usa as mesmas regras de frequência do app (`functions/_shared/`).
+
+Para montar num projeto Supabase seu:
+
+```bash
+npx supabase login
+npx supabase link --project-ref SEU_PROJETO
+npx supabase db push
+npx supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... VAPID_SUBJECT=https://seu-site CRON_SECRET=...
+npx supabase functions deploy send-reminders --no-verify-jwt --use-api
+```
+
+E guarde o mesmo `CRON_SECRET` no Vault com o nome `reminders_cron_secret` (`select vault.create_secret('...', 'reminders_cron_secret');`).
+
 ## Execução
 
 ```bash
@@ -85,6 +104,7 @@ Além disso:
 - Dá para marcar ou desmarcar dias passados, para corrigir um esquecimento.
 - Os hábitos ficam salvos no navegador (`localStorage`); o backup exporta e importa tudo num arquivo JSON.
 - Se os dados salvos estiverem corrompidos, o app volta aos hábitos iniciais sem quebrar a tela.
+- Conta opcional (`/conta`): sincroniza os hábitos entre aparelhos (vence a edição mais recente) e envia um lembrete por dia no horário escolhido, mesmo com o app fechado.
 - Tema claro e escuro, que segue o sistema e lembra a escolha.
 - Instalável como app (PWA) no celular e no computador; depois da primeira visita, abre sem internet.
 - O título da aba mostra o progresso, no formato "X/Y hábitos concluídos".
@@ -94,6 +114,7 @@ Além disso:
 - React 19
 - Vite 8
 - React Router 7
+- Supabase (login, banco Postgres com RLS, Edge Function e pg_cron) e Web Push
 - CSS puro com variáveis (sem bibliotecas de UI)
 
 ## Autor

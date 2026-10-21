@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
+import { useHabits } from "../context/useHabits";
 
 const THEME_KEY = "my-daily-habits:theme";
 
@@ -23,6 +24,7 @@ function getInitialTheme() {
 }
 
 export default function AppLayout() {
+  const { cloud } = useHabits();
   const [theme, setTheme] = useState(getInitialTheme);
 
   useEffect(() => {
@@ -50,14 +52,22 @@ export default function AppLayout() {
               <small>painel do Hendrick</small>
             </span>
           </Link>
-          <button
-            type="button"
-            className="icon-button"
-            onClick={toggleTheme}
-            aria-label={theme === "dark" ? "Usar tema claro" : "Usar tema escuro"}
-          >
-            {theme === "dark" ? "☀️" : "🌙"}
-          </button>
+          <div className="topbar-actions">
+            {cloud.enabled && (
+              <NavLink to="/conta" className="icon-button account-button" aria-label={cloud.user ? `Conta: ${cloud.user.email}` : "Entrar"}>
+                👤
+                {cloud.user && <span className={`sync-dot is-${cloud.sync.status}`} aria-hidden="true" />}
+              </NavLink>
+            )}
+            <button
+              type="button"
+              className="icon-button"
+              onClick={toggleTheme}
+              aria-label={theme === "dark" ? "Usar tema claro" : "Usar tema escuro"}
+            >
+              {theme === "dark" ? "☀️" : "🌙"}
+            </button>
+          </div>
         </div>
 
         <nav className="main-nav" aria-label="Principal">

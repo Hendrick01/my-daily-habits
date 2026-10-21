@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { toDateKey, fromDateKey, lastDays, startOfWeek } from "./dates.js";
 import { sanitizeHabits } from "./habits.js";
+import { mergeHabits, fromRow, toRow } from "./sync.js";
 import { DAILY, sanitizeSchedule, describeSchedule, isDueToday, getStreak, getBestStreak, getWeekCount } from "./schedule.js";
 
 // Quarta-feira, 21/10/2026.
@@ -64,15 +65,65 @@ const key = "2026-10-21";
 assert.deepEqual(sanitizeHabits("{oops", key), [], "não é lista");
 assert.deepEqual(
   sanitizeHabits([{ id: "a", title: "Ler", goal: "10 páginas", completed: true }], key),
-  [{ id: "a", title: "Ler", goal: "10 páginas", emoji: undefined, schedule: DAILY, completedDates: [key] }],
+  [{ id: "a", title: "Ler", goal: "10 páginas", emoji: undefined, schedule: DAILY, updatedAt: undefined, deleted: undefined, completedDates: [key] }],
   "formato antigo é migrado",
 );
 assert.deepEqual(
   sanitizeHabits([1, null, { id: "b" }, { id: "c", title: "Correr", emoji: "🏃", schedule: mwf, completedDates: ["2026-10-20", "lixo", "2026-10-19", "2026-10-20"] }], key),
-  [{ id: "c", title: "Correr", goal: undefined, emoji: "🏃", schedule: mwf, completedDates: ["2026-10-19", "2026-10-20"] }],
+  [{ id: "c", title: "Correr", goal: undefined, emoji: "🏃", schedule: mwf, updatedAt: undefined, deleted: undefined, completedDates: ["2026-10-19", "2026-10-20"] }],
   "descarta itens inválidos, datas ruins e repetidas; mantém emoji e frequência",
 );
 assert.equal(sanitizeHabits([{ id: "e", title: "X", emoji: 42 }], key)[0].emoji, undefined, "emoji que não é texto é descartado");
 assert.equal(sanitizeHabits([{ id: "d", title: "A" }, { id: "d", title: "B" }], key).length, 1, "id repetido entra uma vez");
+
+assert.equal(
+  sanitizeHabits([{ id: "f", title: "X", updatedAt: "2026-10-21T19:40:00.123+00:00", deleted: true }], key)[0].updatedAt,
+  "2026-10-21T19:40:00.123Z",
+  "data da nuvem é normalizada para comparar como texto",
+);
+
+// ---------- sincronização ----------
+
+const h = (id, updatedAt, extra = {}) => ({ id, title: id, schedule: DAILY, completedDates: [], updatedAt, ...extra });
+const t1 = "2026-10-21T10:00:00.000Z";
+const t2 = "2026-10-21T11:00:00.000Z";
+
+{
+  const { merged, toPush } = mergeHabits([h("a", t2, { title: "local" })], [h("a", t1, { title: "nuvem" })]);
+  assert.equal(merged[0].title, "local", "edição local mais nova vence");
+  assert.equal(toPush.length, 1);
+}
+{
+  const { merged, toPush } = mergeHabits([h("a", t1, { title: "local" })], [h("a", t2, { title: "nuvem" })]);
+  assert.equal(merged[0].title, "nuvem", "edição da nuvem mais nova vence");
+  assert.equal(toPush.length, 0);
+}
+{
+  const { merged, toPush } = mergeHabits([h("a", t1)], [h("a", t1), h("b", t1)]);
+  assert.deepEqual(merged.map((x) => x.id), ["a", "b"], "o que só existe na nuvem desce");
+  assert.equal(toPush.length, 0, "empate não sobe nada");
+}
+{
+  const { merged, toPush } = mergeHabits([h("a", t2, { deleted: true })], [h("a", t1)]);
+  assert.equal(merged[0].deleted, true, "exclusão local mais nova vence");
+  assert.equal(toPush[0].deleted, true);
+}
+{
+  const { merged, toPush } = mergeHabits([h("water", undefined)], []);
+  assert.equal(toPush.length, 1, "conta vazia recebe os hábitos iniciais");
+  assert.equal(merged[0].updatedAt, new Date(0).toISOString());
+}
+{
+  const { merged, toPush } = mergeHabits([h("water", undefined), h("walk", undefined)], [h("water", t1, { title: "da nuvem" }), h("x", t1)]);
+  assert.deepEqual(merged.map((x) => x.id), ["water", "x"], "aparelho novo não suja uma conta com dados");
+  assert.equal(merged[0].title, "da nuvem");
+  assert.equal(toPush.length, 0);
+}
+{
+  const habit = h("a", t1, { goal: "1x", emoji: "💧", completedDates: [key] });
+  const back = fromRow({ ...toRow(habit, "user-1"), updated_at: t1 });
+  assert.deepEqual(back, { ...habit, deleted: undefined }, "ida e volta pela tabela preserva o hábito");
+  assert.equal(toRow(habit, "user-1").user_id, "user-1");
+}
 
 console.log("utils: ok");

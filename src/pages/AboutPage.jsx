@@ -23,6 +23,7 @@ export default function AboutPage() {
           <li>Dar um ícone para cada hábito e ver o histórico de 16 semanas.</li>
           <li>Alternar entre tema claro e escuro.</li>
           <li>Instalar como app e usar sem internet.</li>
+          <li>Criar uma conta para sincronizar entre aparelhos e receber um lembrete por dia.</li>
         </ul>
       </div>
     </>
