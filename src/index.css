@@ -1,10 +1,104 @@
 :root {
-  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  color-scheme: light;
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --surface-2: #f0eee8;
+  --text: #1c1917;
+  --muted: #6b645d;
+  --border: #e6e2da;
+  --border-strong: #d3cdc2;
+  --primary: #0f766e;
+  --primary-strong: #115e59;
+  --primary-soft: #ccfbf1;
+  --on-primary: #ffffff;
+  --accent-text: #b45309;
+  --danger: #dc2626;
+  --shadow: 0 1px 2px rgb(28 25 23 / 0.05), 0 6px 20px rgb(28 25 23 / 0.05);
+
+  --radius: 16px;
+  --radius-sm: 10px;
+
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   line-height: 1.5;
-  color: #1f2937;
-  background: #f5f5f4;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0d1211;
+    --surface: #151c1b;
+    --surface-2: #1d2726;
+    --text: #e8eeec;
+    --muted: #9aa8a4;
+    --border: #26312f;
+    --border-strong: #35423f;
+    --primary: #2dd4bf;
+    --primary-strong: #5eead4;
+    --primary-soft: #123d39;
+    --on-primary: #042f2e;
+    --accent-text: #fbbf24;
+    --danger: #f87171;
+    --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.25);
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0d1211;
+  --surface: #151c1b;
+  --surface-2: #1d2726;
+  --text: #e8eeec;
+  --muted: #9aa8a4;
+  --border: #26312f;
+  --border-strong: #35423f;
+  --primary: #2dd4bf;
+  --primary-strong: #5eead4;
+  --primary-soft: #123d39;
+  --on-primary: #042f2e;
+  --accent-text: #fbbf24;
+  --danger: #f87171;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.25);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  transition: background-color 0.2s, color 0.2s;
+}
+
+a {
+  color: var(--primary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
 }

@@ -1,10 +1,25 @@
 export default function AboutPage() {
   return (
-    <div>
-      <h2>Sobre o projeto</h2>
-      <p>
-        A coisa mais difícil nesta atividade foi entender como compartilhar o estado global sem quebrar o fluxo de dados dos componentes antigos. Resolvi isso lendo a documentação do React sobre Context API e mapeando com cuidado o que deveria ficar no Provider e o que pertencia aos formulários locais.
-      </p>
-    </div>
+    <>
+      <header className="page-head">
+        <h1>Sobre o projeto</h1>
+        <p>Projeto final do módulo de React · Capacitação Full Stack ITEAM · 2026</p>
+      </header>
+
+      <div className="card prose">
+        <p>
+          A coisa mais difícil nesta atividade foi entender como compartilhar o estado global sem quebrar o fluxo de dados dos componentes antigos. Resolvi isso lendo a documentação do React sobre Context API e mapeando com cuidado o que deveria ficar no Provider e o que pertencia aos formulários locais.
+        </p>
+
+        <h2>O que dá para fazer aqui</h2>
+        <ul>
+          <li>Marcar hábitos como feitos: a lista recomeça sozinha a cada dia.</li>
+          <li>Acompanhar sequências 🔥 de dias seguidos e o histórico da semana.</li>
+          <li>Ver o progresso do dia e dos últimos 7 dias.</li>
+          <li>Buscar sugestões numa API e adicioná-las com um clique.</li>
+          <li>Alternar entre tema claro e escuro.</li>
+        </ul>
+      </div>
+    </>
   );
 }

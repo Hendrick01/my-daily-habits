@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { fetchSuggestions } from "../services/habitSuggestions";
-import Panel from "../components/Panel";
+import { useHabits } from "../context/useHabits";
 
 export default function SuggestionsPage() {
+  const { habits, addHabit } = useHabits();
   const [suggestions, setSuggestions] = useState([]);
-  const [status, setStatus] = useState("idle"); // 'idle', 'loading', 'success', 'error'
+  const [status, setStatus] = useState("idle"); // idle | loading | success | error
   const [errorMessage, setErrorMessage] = useState("");
 
   async function handleSearch() {
@@ -22,40 +23,61 @@ export default function SuggestionsPage() {
     }
   }
 
+  const myTitles = new Set(habits.map((habit) => habit.title.toLowerCase()));
+
   return (
-    <div>
-      <h2>Sugestões de Hábitos</h2>
-      <button type="button" onClick={handleSearch} disabled={status === "loading"}>
+    <>
+      <header className="page-head">
+        <h1>Sugestões</h1>
+        <p>Ideias de hábitos vindas de uma API pública. Gostou de alguma? Adicione à sua lista.</p>
+      </header>
+
+      <button type="button" className="btn btn-primary" onClick={handleSearch} disabled={status === "loading"}>
         Buscar sugestões
       </button>
 
-      <div style={{ marginTop: "2rem" }}>
-        {status === "idle" && <p>Clique no botão acima para buscar ideias de hábitos na API.</p>}
-        {status === "loading" && <p>Buscando sugestões...</p>}
-        {status === "error" && <p style={{ color: "red" }}>{errorMessage}</p>}
-        
+      <div className="suggestions" aria-live="polite">
+        {status === "idle" && <p className="status-msg">Clique no botão acima para buscar ideias de hábitos na API.</p>}
+
+        {status === "loading" && (
+          <>
+            <p className="status-msg">Buscando sugestões...</p>
+            {[1, 2, 3].map((row) => (
+              <div key={row} className="skeleton" />
+            ))}
+          </>
+        )}
+
+        {status === "error" && (
+          <p className="status-msg is-error" role="alert">
+            {errorMessage}
+          </p>
+        )}
+
         {status === "success" && (
-          <Panel title={`${suggestions.length} sugestões recebidas`}>
-            <ul style={{ listStyle: "none", padding: 0 }}>
-              {suggestions.map((item) => (
-                <li 
-                  key={item.id} 
-                  style={{ 
-                    padding: "1rem", 
-                    border: "1px solid #ddd", 
-                    marginBottom: "0.5rem", 
-                    borderRadius: "4px" 
-                  }}
-                >
-                  <strong>{item.title}</strong>
-                  <br />
-                  <small>Status original: {item.completed ? "Concluído" : "Pendente"}</small>
-                </li>
-              ))}
+          <>
+            <p className="status-msg">{suggestions.length} sugestões recebidas</p>
+            <ul className="suggestion-list">
+              {suggestions.map((item) => {
+                const added = myTitles.has(item.title.toLowerCase());
+                return (
+                  <li key={item.id} className="suggestion">
+                    <strong>{item.title}</strong>
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-sm"
+                      disabled={added}
+                      onClick={() => addHabit(item.title, "1x por dia")}
+                    >
+                      {added ? "Adicionado ✓" : "+ Adicionar"}
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
-          </Panel>
+          </>
         )}
       </div>
-    </div>
+    </>
   );
 }

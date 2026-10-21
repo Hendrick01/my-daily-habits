@@ -20,30 +20,40 @@ export default function HabitForm({ onAddHabit }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <label>
+    <form className="form" onSubmit={handleSubmit} noValidate>
+      <label className="field">
         Hábito
         <input
           type="text"
           name="habit"
+          placeholder="Ex.: Beber água"
+          maxLength={60}
           value={title}
           onChange={(event) => setTitle(event.target.value)}
         />
       </label>
 
-      <label>
+      <label className="field">
         Meta
         <input
           type="text"
           name="goal"
+          placeholder="Ex.: 8 copos"
+          maxLength={60}
           value={goal}
           onChange={(event) => setGoal(event.target.value)}
         />
       </label>
 
-      {error && <p>{error}</p>}
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
 
-      <button type="submit">Adicionar hábito</button>
+      <button type="submit" className="btn btn-primary">
+        Adicionar hábito
+      </button>
     </form>
   );
 }
