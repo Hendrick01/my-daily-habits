@@ -18,11 +18,11 @@ Isso vale ponto parcial. Deixar em branco não vale nada.
 ## M1 — `value` sem `onChange`: qual aviso o React emite e por quê?
 
 **Resposta:**
-Quando um `<input>` recebe a prop `value` sem um manipulador `onChange`, o React o converte em um elemento estritamente somente leitura no DOM virtual. Como o React re-renderiza o componente com base no estado e não há função para atualizar esse estado ao digitar, a interface ignora as teclas do usuário e exibe um aviso de alerta no console.
+Quando colocamos a prop `value` num `<input>` mas não passamos a função `onChange`, o React entende que o campo é estático. Se tentar digitar algo, nada acontece na tela e o console do navegador exibe o aviso completo: `Warning: You provided a 'value' prop to a form field without an 'onChange' handler. This will render a read-only field. If the field should be mutable use 'defaultValue'. Otherwise, set either 'onChange' or 'readOnly'.`
 
 **Fonte:** https://react.dev/reference/react-dom/components/input#controlling-an-input-with-a-state-variable
 
-**No meu código:** No arquivo `src/components/HabitForm.jsx`, cada campo possui seu respetivo evento `onChange` (`setTitle(event.target.value)` e `setGoal(event.target.value)`), garantindo a atualização do estado local a cada caractere digitado.
+**No meu código:** No `HabitForm.jsx`, os inputs de hábito e meta possuem o seu próprio `onChange` (ex: `onChange={(event) => setTitle(event.target.value)}`), que avisa o React para atualizar o estado cada vez que eu aperto uma tecla.
 
 ---
 
@@ -40,11 +40,11 @@ O hook `useParams()` extrai todos os parâmetros definidos na rota do navegador 
 ## M3 — Além da classe `active`, como o `NavLink` informa que está ativo?
 
 **Resposta:**
-O componente `NavLink` é uma variação do `Link` que injeta automaticamente a classe CSS `.active` na tag renderizada quando a URL atual coincide com a prop `to`. A prop `end` no link da raiz (`/`) impede que a rota principal permaneça destacada continuamente, pois garante que a correspondência ocorra apenas se o caminho terminar exatamente em `/`.
+Além de colocar automaticamente a classe `active`, o `<NavLink>` injeta o atributo `aria-current="page"` na tag `<a>` inspecionada no DevTools, sinalizando para leitores de tela qual é a página atual. A prop `end` garante que o link só fique ativo se a URL terminar exatamente ali. Sem o `end` no link da raiz (`/`), o botão "Hoje" ficaria marcado o tempo todo, já que todas as rotas (como `/novo` ou `/habitos`) começam com a barra.
 
 **Fonte:** https://reactrouter.com/api/components/NavLink
 
-**No meu código:** No arquivo `src/layouts/AppLayout.jsx`, utilizo `<NavLink to="/" end>` no item "Hoje" do menu principal para garantir que o estilo de item ativo alterne corretamente entre as páginas da aplicação.
+**No meu código:** Uso o `<NavLink to="/" end>` no menu do `AppLayout.jsx` para garantir que o estilo de aba ativa alterne corretamente e não fique travado na página inicial.
 
 ---
 
@@ -84,21 +84,20 @@ No ecossistema Vite, as variáveis de ambiente são lidas através de `import.me
 ## M7 — Um bug concreto causado por usar o índice como `key`
 
 **Resposta:**
-Utilizar o índice do array (`index`) na prop `key` gera bugs visuais e de perda de estado quando itens da lista são reordenados, filtrados ou removidos. O React utiliza a chave para rastrear a identidade de cada nó no DOM virtual; ao alterar a ordem de um array indexado, o React reutiliza instâncias de componentes erradas.
+Se usamos o índice (`index`) como `key`, o React se perde totalmente quando a ordem dos itens muda. Como o React usa a chave para identificar quem é o elemento no DOM, se o índice 0 sempre for o primeiro, ele reaproveita o estado do elemento antigo para o dado novo.
 
 **Como reproduzir (pode ser um experimento temporário):**
+No experimento, coloquei um input solto no `HabitCard` e digitei "água" no primeiro hábito (Beber água). Ao adicionar um novo hábito no topo da lista, o texto "água" pulou para o cartão novo! Com `key={index}`, o React acha que o cartão `0` é o mesmo e preserva o texto digitado nele, apenas trocando o título por cima. Voltando para `key={habit.id}`, o React rastreia a identidade do cartão, e a anotação desceu corretamente junto com o hábito original.
 
 **Fonte:** https://react.dev/learn/rendering-lists#why-does-react-need-keys
-
-**No meu código:** Nos arquivos `src/components/HabitList.jsx` e `src/pages/SuggestionsPage.jsx`, atribuo `key={habit.id}` e `key={item.id}` utilizando IDs únicos e imutáveis originados do estado ou da API externa.
 
 ---
 
 ## M8 — Por que um efeito parece rodar duas vezes em desenvolvimento?
 
 **Resposta:**
-No React 18, o componente `<React.StrictMode>` monta, desmonta e remontando intencionalmente os componentes em ambiente de desenvolvimento durante a renderização inicial. Esse comportamento serve para expor efeitos colaterais sem função de limpeza (cleanup) apropriada, como assinaturas pendentes e conexões duplicadas.
+No React 19, o componente `<StrictMode>` roda os efeitos duas vezes de propósito no modo de desenvolvimento (ele monta, desmonta e monta de novo). O objetivo é expor bugs e testar se as funções de limpeza (cleanup) dos efeitos estão funcionando corretamente e não deixando "lixo" para trás.
 
 **Fonte:** https://react.dev/reference/react/useEffect#my-effect-runs-twice-when-the-component-mounts
 
-**No meu código:** No arquivo `src/main.jsx`, a aplicação é envelopada por `<React.StrictMode>`. Validei que as chamadas no `SuggestionsPage.jsx` dependem do clique do usuário, impedindo que requisições assíncronas sejam disparadas em duplicidade no carregamento.
+**No meu código:** No `HabitsContext.jsx`, possuo dois `useEffect`: um sincroniza os hábitos alterados com o `localStorage`, e o outro atualiza o título da aba do navegador com a contagem de hábitos. O efeito do título possui uma função de limpeza (`return () => { ... }`). Quando o StrictMode age, o componente monta e altera o título; depois ele desmonta rapidamente, acionando a função de limpeza que devolve o título original ("My Daily Habits"); por fim, ele monta de novo e reinstala o título com o contador correto.
