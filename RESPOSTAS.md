@@ -64,8 +64,9 @@ A prop `replace` substitui a entrada atual no histórico de navegação do naveg
 ## M5 — Por que um 404 não rejeita a promessa do `fetch`?
 
 **Resposta:**
+A função `fetch` **não** lança uma exceção (não cai no bloco `catch`) quando o servidor responde com códigos de erro HTTP como 404 (Not Found) ou 500 (Internal Error). Ela só rejeita a Promise se houver uma falha real de rede (como estar sem internet, erro de DNS ou bloqueio de CORS). Por isso é obrigatório checar se a propriedade `response.ok` é verdadeira antes de ler os dados.
 
-**Fonte:**
+**Fonte:** https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
 
 **No meu código:**
 
@@ -74,8 +75,9 @@ A prop `replace` substitui a entrada atual no histórico de navegação do naveg
 ## M6 — Por que `import.meta.env` e não `process.env` no Vite?
 
 **Resposta:**
+No Vite, as variáveis de ambiente não são acessadas via `process.env` (como no Node.js comum), mas sim através de um objeto especial injetado pelo bundler chamado `import.meta.env`.
 
-**Fonte:**
+**Fonte:** https://vite.dev/guide/env-and-mode
 
 **No meu código:**
 
