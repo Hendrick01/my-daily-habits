@@ -621,6 +621,33 @@ test("celular: barra inferior, menu 'Mais' e nenhuma página com rolagem lateral
   }
 });
 
+test("celular: botão liga e desliga o modo celular e guarda a escolha", async () => {
+  const visible = (selector) => `getComputedStyle(document.querySelector(${JSON.stringify(selector)})).display !== "none"`;
+  const button = `document.querySelector(".layout-button")`;
+  try {
+    await go("/treino");
+    await expectJs(`[document.documentElement.dataset.layout, ${button}.getAttribute("aria-pressed")]`, ["desktop", "false"]);
+    await js(click(".layout-button"));
+    await expectJs(`[document.documentElement.dataset.layout, ${visible(".tab-bar")}, ${visible(".main-nav")}]`, ["mobile", true, false]);
+    await expectJs(`document.querySelector("main.app").getBoundingClientRect().width`, 480);
+    await go("/treino");
+    await expectJs(`[document.documentElement.dataset.layout, ${button}.getAttribute("aria-pressed")]`, ["mobile", "true"]);
+    await js(click(".layout-button"));
+    await expectJs(`[document.documentElement.dataset.layout, ${visible(".tab-bar")}, localStorage.getItem("my-daily-habits:layout")]`, ["desktop", false, "desktop"]);
+
+    // No celular, desligar mostra o menu do topo mesmo com a tela estreita.
+    await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+    await go("/");
+    await expectJs(`[${visible(".tab-bar")}, ${visible(".main-nav")}]`, [false, true]);
+    await js(`localStorage.removeItem("my-daily-habits:layout");`);
+    await go("/");
+    await expectJs(`[document.documentElement.dataset.layout, ${visible(".tab-bar")}]`, ["mobile", true]);
+  } finally {
+    await send("Emulation.clearDeviceMetricsOverride");
+    await js(`localStorage.removeItem("my-daily-habits:layout");`);
+  }
+});
+
 // ---------- progresso, tema, PWA ----------
 
 test("progresso mostra porcentagem sem NaN", async () => {
@@ -637,7 +664,7 @@ test("sem hábitos, /progresso redireciona para /novo", async () => {
 test("alternar tema salva a escolha", async () => {
   await go("/");
   const before = await js(`return document.documentElement.dataset.theme`);
-  await js(click("button.icon-button"));
+  await js(click('button[aria-label*="tema"]'));
   await expectJs(`document.documentElement.dataset.theme`, (theme) => theme !== before);
   await expectJs(`localStorage.getItem("my-daily-habits:theme") === document.documentElement.dataset.theme`, true);
 });

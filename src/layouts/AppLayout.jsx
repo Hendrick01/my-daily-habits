@@ -3,6 +3,8 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useHabits } from "../context/useHabits";
 
 const THEME_KEY = "my-daily-habits:theme";
+const LAYOUT_KEY = "my-daily-habits:layout";
+const PHONE = "(max-width: 640px)";
 
 const links = [
   ["/", "Hoje"],
@@ -56,6 +58,17 @@ function TabBar() {
   );
 }
 
+// Modo escolhido no botão 📱; sem escolha, segue a largura da tela.
+function getSavedLayout() {
+  try {
+    const saved = localStorage.getItem(LAYOUT_KEY);
+    if (saved === "mobile" || saved === "desktop") return saved;
+  } catch {
+    // armazenamento bloqueado: segue a tela
+  }
+  return null;
+}
+
 function getInitialTheme() {
   try {
     const saved = localStorage.getItem(THEME_KEY);
@@ -69,10 +82,34 @@ function getInitialTheme() {
 export default function AppLayout() {
   const { cloud } = useHabits();
   const [theme, setTheme] = useState(getInitialTheme);
+  const [savedLayout, setSavedLayout] = useState(getSavedLayout);
+  const [narrow, setNarrow] = useState(() => window.matchMedia(PHONE).matches);
+  const layout = savedLayout ?? (narrow ? "mobile" : "desktop");
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
+
+  useEffect(() => {
+    document.documentElement.dataset.layout = layout;
+  }, [layout]);
+
+  useEffect(() => {
+    const query = window.matchMedia(PHONE);
+    const onChange = (event) => setNarrow(event.matches);
+    query.addEventListener("change", onChange);
+    return () => query.removeEventListener("change", onChange);
+  }, []);
+
+  function toggleLayout() {
+    const next = layout === "mobile" ? "desktop" : "mobile";
+    setSavedLayout(next);
+    try {
+      localStorage.setItem(LAYOUT_KEY, next);
+    } catch {
+      // sem armazenamento, a escolha vale só nesta visita
+    }
+  }
 
   function toggleTheme() {
     const next = theme === "dark" ? "light" : "dark";
@@ -102,6 +139,16 @@ export default function AppLayout() {
                 {cloud.user && <span className={`sync-dot is-${cloud.sync.status}`} aria-hidden="true" />}
               </NavLink>
             )}
+            <button
+              type="button"
+              className="icon-button layout-button"
+              onClick={toggleLayout}
+              aria-pressed={layout === "mobile"}
+              aria-label="Modo celular"
+              title={layout === "mobile" ? "Desligar o modo celular" : "Ligar o modo celular"}
+            >
+              {layout === "mobile" ? "🖥️" : "📱"}
+            </button>
             <button
               type="button"
               className="icon-button"

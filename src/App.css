@@ -188,81 +188,113 @@
   color: var(--on-primary);
 }
 
-/* Modo celular: o menu do topo vira uma barra fixa embaixo, como num app. */
+/* Modo celular: o menu do topo vira uma barra fixa embaixo, como num app.
+   Vale quando <html data-layout="mobile">: em telas de até 640 px ou pelo botão 📱 do topo. */
 
 .tab-bar {
   display: none;
 }
 
-@media (max-width: 640px) {
-  .main-nav {
-    display: none;
-  }
+:root[data-layout="mobile"] .main-nav {
+  display: none;
+}
 
-  .topbar-inner {
-    padding: 10px 16px;
-  }
+/* No computador, o modo celular mostra o app na largura de um celular. */
+:root[data-layout="mobile"] :is(.topbar-inner, .app) {
+  max-width: 480px;
+}
 
-  .tab-bar {
-    position: fixed;
-    inset: auto 0 0;
-    z-index: 20;
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
-    border-top: 1px solid var(--border);
-    background: color-mix(in srgb, var(--surface) 92%, transparent);
-    backdrop-filter: blur(12px);
-  }
+:root[data-layout="mobile"] .topbar-inner {
+  padding: 10px 16px;
+}
 
-  .tab-bar > a,
-  .tab-bar > button {
-    display: grid;
-    justify-items: center;
-    gap: 3px;
-    min-height: 50px;
-    padding: 6px 0 4px;
-    border: 0;
-    border-radius: 12px;
-    background: none;
-    color: var(--muted);
-    font: inherit;
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
+:root[data-layout="mobile"] .tab-bar {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  max-width: 480px;
+  margin-inline: auto;
+  padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(12px);
+}
 
-  .tab-bar span {
-    font-size: 1.3rem;
-    line-height: 1;
-    filter: grayscale(1);
-    opacity: 0.65;
-  }
-
-  .tab-bar .active {
-    color: var(--primary);
-  }
-
-  .tab-bar .active span {
-    filter: none;
-    opacity: 1;
-  }
-
-  .app {
-    padding-top: 20px;
-    padding-bottom: calc(96px + env(safe-area-inset-bottom));
-  }
-
-  /* 16px evita o zoom automático do iPhone ao tocar num campo. */
-  .app :is(input, select, textarea):not(.title-input) {
-    font-size: 16px;
+@media (min-width: 481px) {
+  :root[data-layout="mobile"] .tab-bar {
+    border: 1px solid var(--border);
+    border-bottom: 0;
+    border-radius: 16px 16px 0 0;
   }
 }
 
+:root[data-layout="mobile"] .tab-bar > a,
+:root[data-layout="mobile"] .tab-bar > button {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  min-height: 50px;
+  padding: 6px 0 4px;
+  border: 0;
+  border-radius: 12px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+:root[data-layout="mobile"] .tab-bar span {
+  font-size: 1.3rem;
+  line-height: 1;
+  filter: grayscale(1);
+  opacity: 0.65;
+}
+
+:root[data-layout="mobile"] .tab-bar .active {
+  color: var(--primary);
+}
+
+:root[data-layout="mobile"] .tab-bar .active span {
+  filter: none;
+  opacity: 1;
+}
+
+:root[data-layout="mobile"] .app {
+  padding-top: 20px;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+/* 16px evita o zoom automático do iPhone ao tocar num campo. */
+:root[data-layout="mobile"] .app :is(input, select, textarea):not(.title-input) {
+  font-size: 16px;
+}
+
+/* Na coluna estreita, os mesmos ajustes que as telas pequenas já recebem. */
+:root[data-layout="mobile"] .item-fields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+:root[data-layout="mobile"] .item-notes {
+  grid-column: 1 / -1;
+}
+
+:root[data-layout="mobile"] .item-actions button {
+  width: 40px;
+  height: 40px;
+}
+
+:root[data-layout="mobile"] .exercise-detail {
+  grid-template-columns: 1fr;
+}
+
 .more-menu {
-  inset: auto 10px calc(74px + env(safe-area-inset-bottom)) auto;
+  inset: auto max(10px, calc((100vw - 480px) / 2 + 10px)) calc(74px + env(safe-area-inset-bottom)) auto;
   min-width: 200px;
   margin: 0;
   padding: 6px;

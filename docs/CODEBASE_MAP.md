@@ -65,7 +65,7 @@ my-daily-habits/
 │   ├── functions/delete-account/  # apaga a conta do usuário logado
 │   ├── migrations/           # tabelas, RLS e o agendamento do cron
 │   └── config.toml           # alinhado ao servidor (MFA, pool, storage)
-├── tests/e2e.mjs             # 50 testes de navegador, sem dependências
+├── tests/e2e.mjs             # 51 testes de navegador, sem dependências
 ├── .github/workflows/ci.yml  # lint → unitários → e2e
 ├── vercel.json               # rewrite de tudo para /index.html (SPA)
 └── docs/ · ATIVIDADE.md · DIARIO.md · RESPOSTAS.md · AI_TUTOR.md · LEIA-ME.md   # material do curso (ver Cuidados)
@@ -91,7 +91,7 @@ my-daily-habits/
 | `/treino/:workoutId` | `WorkoutPage`: editar um treino |
 | `/sugestoes`, `/sobre`, `/conta`, `*` | `SuggestionsPage`, `AboutPage`, `AccountPage`, `NotFoundPage` |
 
-O `AppLayout` guarda o tema em `my-daily-habits:theme` e só mostra o botão de conta quando o Supabase está configurado (`cloud.enabled`). Em telas de até 640 px (modo celular), o menu do topo some e aparece o `TabBar`, uma barra fixa embaixo com Hoje, Hábitos, Novo e Treino. O resto fica no menu "Mais", que usa o atributo HTML `popover`.
+O `AppLayout` guarda o tema em `my-daily-habits:theme` e só mostra o botão de conta quando o Supabase está configurado (`cloud.enabled`). No modo celular (`<html data-layout="mobile">`), o menu do topo some e aparece o `TabBar`, uma barra fixa embaixo com Hoje, Hábitos, Novo e Treino. O resto fica no menu "Mais", que usa o atributo HTML `popover`. O modo segue a largura da tela (até 640 px) até a pessoa tocar no botão 📱, e aí a escolha fica salva em `my-daily-habits:layout`. O `index.html` aplica tema e modo antes do React, para a tela não piscar. Todo o CSS do modo celular usa o seletor `:root[data-layout="mobile"]`, não media query.
 
 ### Hábitos
 
@@ -220,7 +220,7 @@ sequenceDiagram
 npm run dev          # Vite em desenvolvimento (sem service worker)
 npm run lint         # oxlint
 npm test             # unitários: utils.test.js + training.test.js
-npm run test:e2e     # build + 50 testes no Chrome (E2E_URL=https://… testa outro endereço)
+npm run test:e2e     # build + 51 testes no Chrome (E2E_URL=https://… testa outro endereço)
 ```
 
 A sincronização real entre dois aparelhos é testada por um script fora do repositório, com contas `e2e-*@mydailyhabits.dev`. Apague essas contas depois de rodar.
