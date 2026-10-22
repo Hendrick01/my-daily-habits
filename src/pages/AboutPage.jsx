@@ -16,6 +16,7 @@ export default function AboutPage() {
           <li>Marcar hábitos como feitos: a lista recomeça sozinha a cada dia.</li>
           <li>Escolher a frequência: todo dia, dias da semana ou N vezes por semana.</li>
           <li>Dividir um hábito em partes do dia, cada uma com horário e lembrete.</li>
+          <li>Montar treinos a partir de uma avaliação, com exercícios demonstrados, e exportar a planilha.</li>
           <li>Acompanhar sequências 🔥 e o histórico da semana.</li>
           <li>Corrigir dias passados, editar e excluir hábitos.</li>
           <li>Ver o progresso do dia e dos últimos 7 dias.</li>

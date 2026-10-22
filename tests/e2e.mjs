@@ -111,6 +111,11 @@ const fill = (selector, value) => `{
   Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(input, ${JSON.stringify(value)});
   input.dispatchEvent(new Event("input", { bubbles: true }));
 }`;
+const choose = (selector, value) => `{
+  const select = document.querySelector(${JSON.stringify(selector)});
+  Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value").set.call(select, ${JSON.stringify(value)});
+  select.dispatchEvent(new Event("change", { bubbles: true }));
+}`;
 const click = (selector) => `document.querySelector(${JSON.stringify(selector)}).click();`;
 const clickText = (selector, text) =>
   `[...document.querySelectorAll(${JSON.stringify(selector)})].find((el) => el.textContent.includes(${JSON.stringify(text)})).click();`;
@@ -403,6 +408,137 @@ test("sugestões: erro HTTP mostra o status e lista vazia", async () => {
 test("sugestões: resposta que não é JSON mostra mensagem amigável", async () => {
   await js(`window.fetch = async () => new Response("<!doctype html>", { status: 200 }); ${clickText("button", "Buscar sugestões")}`);
   await expectJs(`document.querySelector(".status-msg.is-error")?.textContent`, /formato esperado/);
+});
+
+// ---------- treino ----------
+
+const training = `JSON.parse(localStorage.getItem("my-daily-habits:training") ?? "null")`;
+
+test("treino: sem avaliação, mostra o convite para começar", async () => {
+  await js(`localStorage.removeItem("my-daily-habits:training");`);
+  await go("/treino");
+  await expectJs(`document.querySelector(".training-start h2")?.textContent`, "Comece pela avaliação");
+});
+
+test("treino: avaliação valida medidas e mostra o IMC na hora", async () => {
+  await go("/treino/avaliacao");
+  await js(click(".assessment button[type=submit]"));
+  await expectJs(`document.querySelector(".form-error")?.textContent`, /idade/);
+  await js(`${fill('input[name="age"]', "29")} ${fill('input[name="weight"]', "82")} ${fill('input[name="height"]', "178")}`);
+  await expectJs(`document.querySelector(".bmi-preview")?.textContent`, /25,9 · Sobrepeso/);
+});
+
+test("treino: avaliação gera plano ABC de hipertrofia na academia", async () => {
+  await js(`[...document.querySelectorAll(".option-card")].find((card) => card.textContent.includes("Ganhar massa")).click();`);
+  await js(`${choose('select[name="level"]', "2")} ${choose('select[name="days"]', "3")} ${choose('select[name="minutes"]', "60")}`);
+  await js(click(".assessment button[type=submit]"));
+  await expectJs(`location.pathname`, "/treino");
+  await expectJs(`[...document.querySelectorAll(".workout-card strong")].map((e) => e.textContent)`, ["Treino A", "Treino B", "Treino C"]);
+  await expectJs(`document.querySelector(".workout-card .muted")?.textContent`, /^Peito, Ombros e Tríceps · 9 exercícios/);
+  await expectJs(`${training}.workouts[0].items[0].sets`, 4);
+  await expectJs(`${training}.workouts[0].items[0].reps`, "8–12");
+});
+
+test("treino: PAR-Q com 'sim' mostra aviso de liberação médica", async () => {
+  await go("/treino/avaliacao");
+  await js(`document.querySelectorAll('input[name="parq-1"]')[1].click();`);
+  await expectJs(`document.querySelector(".assessment .notice.is-warning")?.textContent`, /converse com um médico/);
+  await js(clickText(".btn", "Só salvar a avaliação"));
+  await expectJs(`document.querySelector(".notice.is-warning")?.textContent`, /converse com um médico/);
+  await expectJs(`${training}.workouts.length`, 3);
+});
+
+test("treino: editor muda séries, reordena e remove", async () => {
+  const id = await js(`return ${training}.workouts[0].id`);
+  await go(`/treino/${id}`);
+  await expectJs(`document.querySelectorAll(".workout-item").length`, 9);
+  await js(fill('.workout-item input[name="sets"]', "3"));
+  await expectJs(`${training}.workouts[0].items[0].sets`, 3);
+  await js(fill('.workout-item input[name="load"]', "40"));
+  await expectJs(`${training}.workouts[0].items[0].load`, "40");
+  const second = await js(`return document.querySelectorAll(".item-title a")[1].textContent`);
+  await js(`document.querySelectorAll(".item-actions button")[0 + 3].click();`); // ↑ do segundo item
+  await expectJs(`document.querySelector(".item-title a").textContent`, second);
+  await js(`document.querySelector('.item-actions button[aria-label^="Remover"]').click();`);
+  await expectJs(`document.querySelectorAll(".workout-item").length`, 8);
+});
+
+test("treino: seletor busca sem acento e adiciona exercício", async () => {
+  await js(clickText(".btn", "+ Adicionar exercício"));
+  await js(fill('.picker input[name="search"]', "triceps frances"));
+  await expectJs(`[...document.querySelectorAll(".picker-info strong")].map((e) => e.textContent)`, ["Tríceps francês com halter"]);
+  await js(`document.querySelector(".picker-list button").click();`);
+  await expectJs(`[...document.querySelectorAll(".item-title a")].at(-1).textContent`, "Tríceps francês com halter");
+  await expectJs(`document.querySelector(".picker .status-msg")?.textContent`, /adicionado ao treino/);
+});
+
+test("treino: exercício próprio entra no treino e na biblioteca", async () => {
+  const id = await js(`return ${training}.workouts[0].id`);
+  await go(`/treino/exercicios/novo?treino=${id}`);
+  await js(`${fill('input[name="name"]', "Remada no TRX")} ${choose('select[name="group"]', "costas")} ${fill('input[name="videoUrl"]', "javascript:alert(1)")}`);
+  await js(click(".form button[type=submit]"));
+  await expectJs(`document.querySelector(".form-error")?.textContent`, /https:\/\//);
+  await js(fill('input[name="videoUrl"]', ""));
+  await js(click(".form button[type=submit]"));
+  await expectJs(`location.pathname`, `/treino/${id}`);
+  await expectJs(`[...document.querySelectorAll(".item-title a")].at(-1).textContent`, "Remada no TRX");
+  await go("/treino/exercicios");
+  await js(fill('.library-filters input[name="search"]', "trx"));
+  await expectJs(`[...document.querySelectorAll(".exercise-card strong")].map((e) => e.textContent)`, ["Remada no TRX"]);
+});
+
+test("treino: detalhe tem demonstração em 2 fotos, passo a passo e vídeo", async () => {
+  await go("/treino/exercicios/agachamento-goblet");
+  await expectJs(`[...document.querySelectorAll(".exercise-demo.is-large img")].map((img) => img.getAttribute("src").split("/").slice(-2).join("/"))`, ["Goblet_Squat/0.jpg", "Goblet_Squat/1.jpg"]);
+  await expectJs(`document.querySelectorAll(".steps li").length`, 3);
+  await expectJs(`document.querySelector('a[href*="youtube.com/results"]')?.getAttribute("target")`, "_blank");
+  await js(clickText(".btn", "+ Adicionar ao treino"));
+  await expectJs(`document.querySelector(".add-to-workout .status-msg")?.textContent`, /Adicionado ao Treino A/);
+});
+
+test("treino: biblioteca filtra por tipo e grupo", async () => {
+  await go("/treino/exercicios");
+  await js(clickText(".library-filters .segmented button", "Alongamento"));
+  await js(choose('.library-filters select[name="group"]', "costas"));
+  await expectJs(`document.querySelector(".results-count").textContent`, /^[1-9]\d* exercícios?$/);
+  await expectJs(`[...document.querySelectorAll(".exercise-card .muted")].every((e) => e.textContent.startsWith("Costas"))`, true);
+});
+
+test("treino: catálogo completo carrega e busca (rede simulada)", async () => {
+  await go("/treino/exercicios");
+  await js(`window.fetch = async () => new Response(JSON.stringify([
+    { id: "Air_Bike", name: "Air Bike", primaryMuscles: ["abdominals"], equipment: "body only", category: "strength", level: "beginner", images: ["Air_Bike/0.jpg"], instructions: ["Lie flat"] },
+    { id: "Barbell_Squat", name: "Barbell Squat", primaryMuscles: ["quadriceps"], equipment: "barbell", category: "strength", level: "beginner", images: ["Barbell_Squat/0.jpg"], instructions: ["Stand"] }
+  ]), { status: 200 });`);
+  await js(clickText(".catalog .btn", "Carregar catálogo completo"));
+  await expectJs(`document.querySelector(".catalog .status-msg")?.textContent`, /2 exercícios carregados/);
+  await js(fill('.library-filters input[name="search"]', "squat"));
+  await expectJs(`[...document.querySelectorAll(".catalog .exercise-card strong")].map((e) => e.textContent)`, ["Barbell Squat"]);
+});
+
+test("treino: planilha CSV com avaliação e exercícios", async () => {
+  await go("/treino");
+  const csv = await js(`
+    let blob;
+    URL.createObjectURL = (file) => { blob = file; return "blob:teste"; };
+    URL.revokeObjectURL = () => {};
+    HTMLAnchorElement.prototype.click = () => {};
+    ${clickText(".btn", "Exportar planilha")}
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    return (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf ? "BOM" : "sem BOM") + "|" + (await blob.text());`);
+  assert.ok(csv.startsWith("BOM|"), "BOM para o Excel reconhecer acentos");
+  assert.match(csv, /Objetivo;Ganhar massa muscular/);
+  assert.match(csv, /IMC;25,9 \(Sobrepeso\)/);
+  assert.match(csv, /Treino;Foco;Ordem;Exercício;Grupo;Séries;Repetições;Carga \(kg\);Descanso \(s\);Observações/);
+  assert.match(csv, /Treino A;Peito, Ombros e Tríceps;1;.*;3;8–12;40;75;/, "edição de séries e carga vai para a planilha");
+  assert.match(csv, /Remada no TRX/);
+});
+
+test("treino: cria o hábito 'Treinar' com a frequência do plano", async () => {
+  await js(clickText(".btn", "Criar hábito"));
+  await expectJs(`document.querySelector(".status-msg")?.textContent`, /3x por semana/);
+  await expectJs(`${saved}.find((habit) => habit.title === "Treinar")?.schedule`, { type: "weekly", times: 3 });
+  await expectJs(`[...document.querySelectorAll(".btn")].some((b) => b.textContent.includes("já existe"))`, true);
 });
 
 // ---------- progresso, tema, PWA ----------

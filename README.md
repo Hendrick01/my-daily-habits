@@ -103,6 +103,8 @@ O site fica em **https://my-daily-habits.vercel.app**. A Vercel está ligada a e
 | `/habitos` | Lista completa com filtro (todos, pendentes, concluídos) e backup dos dados |
 | `/habitos/:habitId` | Detalhe: sequência atual e recorde, últimos 7 dias (clicáveis), calendário de 16 semanas, editar e excluir |
 | `/progresso` | Anel de porcentagem, gráfico da semana e maior sequência; sem hábitos, redireciona para `/novo` |
+| `/treino` | Avaliação (medidas, IMC, objetivo, meta, PAR-Q), plano gerado e treinos editáveis; exporta planilha e imprime |
+| `/treino/exercicios` | 79 exercícios em português com demonstração animada, passo a passo e vídeo, mais o catálogo completo (800+, em inglês) e exercícios próprios |
 | `/sugestoes` | Sorteia 6 sugestões de hábitos ao clicar no botão, com opção de adicionar |
 | `/sobre` | Sobre o projeto |
 | qualquer outro endereço | Página não encontrada |
@@ -110,6 +112,7 @@ O site fica em **https://my-daily-habits.vercel.app**. A Vercel está ligada a e
 Além disso:
 
 - Cada hábito guarda os dias em que foi feito: a lista recomeça sozinha a cada dia, inclusive com o app aberto na virada da meia-noite.
+- Treino: a avaliação gera um plano (focado por grupo muscular, corpo inteiro ou só alongamento) respeitando objetivo, nível, local, tempo e lesões; cada treino termina com alongamentos. Séries, repetições, carga e descanso são editáveis, e o plano sai como planilha CSV (Excel/Google Planilhas) ou PDF. Com conta, sincroniza entre aparelhos.
 - Partes do dia: um hábito pode ser dividido em até 12 partes (ex.: 6 copos de água, remédio de manhã e à noite), cada uma com nome e horário opcionais. O botão do cartão marca a próxima parte; o dia só conta como feito com todas.
 - Lembretes por notificação (com conta): resumo do dia no horário escolhido e um aviso no horário de cada parte que ainda estiver pendente.
 - Frequência por hábito: todo dia, dias da semana (ex.: seg, qua, sex) ou N vezes por semana. A sequência conta os dias programados, ou as semanas em que a meta foi batida.
@@ -128,6 +131,7 @@ Além disso:
 - React Router 7
 - Supabase (login, banco Postgres com RLS, Edge Function e pg_cron) e Web Push
 - CSS puro com variáveis (sem bibliotecas de UI)
+- Exercícios: fotos do [Free Exercise DB](https://github.com/yuhonas/free-exercise-db) (domínio público)
 
 ## Autor
 

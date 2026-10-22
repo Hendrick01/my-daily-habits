@@ -12,6 +12,12 @@ import ProgressPage from "./pages/ProgressPage";
 import ProtectedProgressRoute from "./components/ProtectedProgressRoute";
 import SuggestionsPage from "./pages/SuggestionsPage";
 import AccountPage from "./pages/AccountPage";
+import TrainingPage from "./pages/training/TrainingPage";
+import AssessmentPage from "./pages/training/AssessmentPage";
+import WorkoutPage from "./pages/training/WorkoutPage";
+import LibraryPage from "./pages/training/LibraryPage";
+import ExercisePage from "./pages/training/ExercisePage";
+import CustomExercisePage from "./pages/training/CustomExercisePage";
 
 export default function App() {
   return (
@@ -35,6 +41,14 @@ export default function App() {
             </ProtectedProgressRoute>
           }
         />
+        <Route path="treino">
+          <Route index element={<TrainingPage />} />
+          <Route path="avaliacao" element={<AssessmentPage />} />
+          <Route path="exercicios" element={<LibraryPage />} />
+          <Route path="exercicios/novo" element={<CustomExercisePage />} />
+          <Route path="exercicios/:exerciseId" element={<ExercisePage />} />
+          <Route path=":workoutId" element={<WorkoutPage />} />
+        </Route>
         <Route path="sugestoes" element={<SuggestionsPage />} />
         <Route path="sobre" element={<AboutPage />} />
         <Route path="conta" element={<AccountPage />} />

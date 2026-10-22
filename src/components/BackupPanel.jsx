@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useHabits } from "../context/useHabits";
 import { sanitizeHabits } from "../utils/habits";
+import { downloadFile } from "../utils/download";
 
 export default function BackupPanel() {
   const { habits, today, replaceHabits } = useHabits();
@@ -14,12 +15,7 @@ export default function BackupPanel() {
       exportedAt: new Date().toISOString(),
       habits: habits.map(({ id, title, goal, emoji, schedule, completedDates }) => ({ id, title, goal, emoji, schedule, completedDates })),
     };
-    const url = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `my-daily-habits-${today}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadFile(JSON.stringify(backup, null, 2), `my-daily-habits-${today}.json`, "application/json");
     setMessage("Backup baixado.");
   }
 

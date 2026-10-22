@@ -3,13 +3,16 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import { HabitsProvider } from "./context/HabitsContext.jsx";
+import { TrainingProvider } from "./context/TrainingContext.jsx";
 import "./index.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>
       <HabitsProvider>
-        <App />
+        <TrainingProvider>
+          <App />
+        </TrainingProvider>
       </HabitsProvider>
     </BrowserRouter>
   </StrictMode>

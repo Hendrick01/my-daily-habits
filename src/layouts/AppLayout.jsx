@@ -9,6 +9,7 @@ const links = [
   ["/novo", "Novo hábito"],
   ["/habitos", "Hábitos"],
   ["/progresso", "Progresso"],
+  ["/treino", "Treino"],
   ["/sugestoes", "Sugestões"],
   ["/sobre", "Sobre"],
 ];
