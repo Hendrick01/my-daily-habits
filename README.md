@@ -86,6 +86,14 @@ npm run test:e2e   # build + testes no navegador (precisa do Google Chrome insta
 
 Os testes no navegador sobem o `vite preview` e controlam o Chrome em modo headless, sem dependências extras. Para rodar contra o site publicado: `E2E_URL=https://my-daily-habits.vercel.app node tests/e2e.mjs`. O GitHub Actions roda os três a cada push.
 
+## Deploy
+
+O site fica em **https://my-daily-habits.vercel.app**. A Vercel está ligada a este repositório:
+
+- cada push na branch `redesign` publica o site sozinho, em produção;
+- outras branches viram prévias (protegidas por login da Vercel);
+- a branch `main` é ignorada: ela guarda a versão entregue no curso.
+
 ## Funcionalidades
 
 | Rota | O que faz |
