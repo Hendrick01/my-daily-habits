@@ -189,7 +189,7 @@ sequenceDiagram
 
 - **As regras de datas, agenda e partes ficam em `supabase/functions/_shared/`.** Os arquivos `src/utils/dates.js`, `schedule.js` e `parts.js` só reexportam. Edite os de `_shared` em JS puro, sem imports de npm, porque o Deno também os usa. Depois, publique o `send-reminders` de novo.
 - **Push na `redesign` publica em produção.** O `main` é a entrega do curso: a Vercel ignora builds dele, e a `redesign` não deve ser mesclada no `main`.
-- **O deploy automático já falhou uma vez** (commit `5d8c398`, sem webhook). Confira se apareceu um deploy novo. Se não, use `npx vercel deploy --prod`.
+- **O deploy automático pode atrasar:** em 2026-10-22 o aviso do GitHub chegou à Vercel de 10 a 30 minutos depois do push. Espere antes de publicar pelo CLI (`npx vercel deploy --prod`), senão o mesmo commit é publicado duas vezes.
 - **O `send-reminders` é publicado com `--no-verify-jwt`.** Quem autentica é o cabeçalho `x-cron-secret`, comparado ao segredo `reminders_cron_secret` do Vault.
 - **A exclusão de conta é uma Edge Function de propósito.** A versão em SQL `security definer` gerava aviso no `db advisors`.
 - **O plano gratuito do Supabase não permite editar os e-mails.** Por isso o login é por e-mail e senha, sem confirmação.
