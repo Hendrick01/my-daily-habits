@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { toDateKey, fromDateKey, lastDays, startOfWeek } from "./dates.js";
 import { sanitizeHabits } from "./habits.js";
 import { mergeHabits, fromRow, toRow } from "./sync.js";
+import { sanitizeParts, sanitizePartsDone, togglePart, toggleDay, nextPartToToggle, partProgress, donePartIds, isPartReminderDue, partLabel } from "./parts.js";
 import { DAILY, sanitizeSchedule, describeSchedule, isDueToday, getStreak, getBestStreak, getWeekCount } from "./schedule.js";
 
 // Quarta-feira, 21/10/2026.
@@ -65,12 +66,12 @@ const key = "2026-10-21";
 assert.deepEqual(sanitizeHabits("{oops", key), [], "não é lista");
 assert.deepEqual(
   sanitizeHabits([{ id: "a", title: "Ler", goal: "10 páginas", completed: true }], key),
-  [{ id: "a", title: "Ler", goal: "10 páginas", emoji: undefined, schedule: DAILY, updatedAt: undefined, deleted: undefined, completedDates: [key] }],
+  [{ id: "a", title: "Ler", goal: "10 páginas", emoji: undefined, schedule: DAILY, parts: undefined, partsDone: undefined, updatedAt: undefined, deleted: undefined, completedDates: [key] }],
   "formato antigo é migrado",
 );
 assert.deepEqual(
   sanitizeHabits([1, null, { id: "b" }, { id: "c", title: "Correr", emoji: "🏃", schedule: mwf, completedDates: ["2026-10-20", "lixo", "2026-10-19", "2026-10-20"] }], key),
-  [{ id: "c", title: "Correr", goal: undefined, emoji: "🏃", schedule: mwf, updatedAt: undefined, deleted: undefined, completedDates: ["2026-10-19", "2026-10-20"] }],
+  [{ id: "c", title: "Correr", goal: undefined, emoji: "🏃", schedule: mwf, parts: undefined, partsDone: undefined, updatedAt: undefined, deleted: undefined, completedDates: ["2026-10-19", "2026-10-20"] }],
   "descarta itens inválidos, datas ruins e repetidas; mantém emoji e frequência",
 );
 assert.equal(sanitizeHabits([{ id: "e", title: "X", emoji: 42 }], key)[0].emoji, undefined, "emoji que não é texto é descartado");
@@ -122,8 +123,45 @@ const t2 = "2026-10-21T11:00:00.000Z";
 {
   const habit = h("a", t1, { goal: "1x", emoji: "💧", completedDates: [key] });
   const back = fromRow({ ...toRow(habit, "user-1"), updated_at: t1 });
-  assert.deepEqual(back, { ...habit, deleted: undefined }, "ida e volta pela tabela preserva o hábito");
+  assert.deepEqual(back, { ...habit, parts: undefined, partsDone: undefined, deleted: undefined }, "ida e volta pela tabela preserva o hábito");
+  const split = { ...habit, parts: [{ id: "p1", label: "", time: "08:00" }, { id: "p2", label: "Noite", time: null }], partsDone: { [key]: ["p1"] } };
+  assert.deepEqual(fromRow({ ...toRow(split, "user-1"), updated_at: t1 }), { ...split, deleted: undefined }, "partes também vão e voltam");
   assert.equal(toRow(habit, "user-1").user_id, "user-1");
 }
+
+// ---------- partes do dia ----------
+
+const water = {
+  completedDates: [],
+  parts: sanitizeParts([{ id: "a", time: "08:00" }, { id: "b", label: " Almoço ", time: "12:00" }, { id: "c", time: "25:00" }, { id: "a" }, { label: "sem id" }]),
+};
+assert.deepEqual(water.parts, [{ id: "a", label: "", time: "08:00" }, { id: "b", label: "Almoço", time: "12:00" }, { id: "c", label: "", time: null }], "partes inválidas e repetidas saem; horário ruim vira null");
+assert.equal(sanitizeParts([]), undefined, "lista vazia = hábito sem partes");
+assert.deepEqual(sanitizePartsDone({ [key]: ["a", "x", "a"], lixo: ["a"], "2026-10-20": [] }, water.parts), { [key]: ["a"] });
+assert.equal(partLabel(water.parts[0], 0), "08:00");
+assert.equal(partLabel(water.parts[1], 1), "Almoço");
+assert.equal(partLabel(water.parts[2], 2), "Parte 3");
+
+let w = togglePart(water, "b", key);
+assert.deepEqual(partProgress(w, key), { done: 1, total: 3 });
+assert.equal(w.completedDates.includes(key), false, "parcial não conclui o dia");
+assert.equal(nextPartToToggle(w, key), "a", "botão principal marca a próxima pendente");
+w = togglePart(togglePart(w, "a", key), "c", key);
+assert.deepEqual(w.completedDates, [key], "todas as partes = dia concluído");
+assert.equal(w.partsDone, undefined, "dia completo não guarda parcial");
+assert.equal(nextPartToToggle(w, key), "c", "com tudo feito, o botão desmarca a última");
+w = togglePart(w, "c", key);
+assert.deepEqual(donePartIds(w, key), ["a", "b"]);
+assert.deepEqual(w.completedDates, [], "desmarcar uma parte reabre o dia");
+assert.deepEqual(toggleDay(w, key).completedDates, [key], "marcar o dia inteiro conclui tudo");
+assert.equal(toggleDay(w, key).partsDone, undefined);
+
+const old = togglePart({ ...water, partsDone: { "2026-09-01": ["a"] } }, "a", key);
+assert.equal(old.partsDone["2026-09-01"], undefined, "progresso parcial antigo é descartado");
+
+assert.equal(isPartReminderDue("08:00", "08:00"), true);
+assert.equal(isPartReminderDue("08:00", "08:29"), true);
+assert.equal(isPartReminderDue("08:00", "08:30"), false, "passou da janela de 30 min");
+assert.equal(isPartReminderDue("08:00", "07:59"), false, "ainda não chegou a hora");
 
 console.log("utils: ok");

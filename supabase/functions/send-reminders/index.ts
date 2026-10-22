@@ -7,6 +7,7 @@ import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { fromDateKey } from "../_shared/dates.js";
 import { isDueToday, sanitizeSchedule } from "../_shared/schedule.js";
+import { donePartIds, isPartReminderDue, isSplit, sanitizeParts, sanitizePartsDone } from "../_shared/parts.js";
 
 const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 webpush.setVapidDetails(Deno.env.get("VAPID_SUBJECT")!, Deno.env.get("VAPID_PUBLIC_KEY")!, Deno.env.get("VAPID_PRIVATE_KEY")!);
@@ -24,6 +25,20 @@ type Subscription = {
   remind_at: string;
   timezone: string;
   last_sent_on: string | null;
+  summary_enabled: boolean;
+  parts_enabled: boolean;
+  parts_sent: { date?: string; keys?: string[] };
+};
+
+type Habit = {
+  id: string;
+  title: string;
+  emoji?: string;
+  goal?: string;
+  schedule: ReturnType<typeof sanitizeSchedule>;
+  completedDates: string[];
+  parts?: { id: string; label: string; time: string | null }[];
+  partsDone?: Record<string, string[]>;
 };
 
 // Data e hora locais no fuso do aparelho que pediu o lembrete.
@@ -39,14 +54,57 @@ function localNow(timeZone: string) {
   return { date, time: `${parts.hour}:${parts.minute}` };
 }
 
-async function pendingToday(userId: string, date: string) {
-  const { data, error } = await supabase.from("habits").select("schedule, completed_dates").eq("user_id", userId).eq("deleted", false);
+async function habitsOf(userId: string): Promise<Habit[]> {
+  const { data, error } = await supabase
+    .from("habits")
+    .select("id, title, emoji, goal, schedule, completed_dates, parts, parts_done")
+    .eq("user_id", userId)
+    .eq("deleted", false);
   if (error) throw error;
+  return data.map((row) => {
+    const parts = sanitizeParts(row.parts);
+    return {
+      id: row.id,
+      title: row.title,
+      emoji: row.emoji ?? undefined,
+      goal: row.goal ?? undefined,
+      schedule: sanitizeSchedule(row.schedule),
+      completedDates: row.completed_dates ?? [],
+      parts,
+      partsDone: sanitizePartsDone(row.parts_done, parts),
+    };
+  });
+}
+
+function pendingCount(habits: Habit[], date: string) {
   const day = fromDateKey(date);
-  return data.filter((row) => {
-    const habit = { schedule: sanitizeSchedule(row.schedule), completedDates: row.completed_dates ?? [] };
-    return isDueToday(habit, day) && !habit.completedDates.includes(date);
-  }).length;
+  return habits.filter((habit) => isDueToday(habit, day) && !habit.completedDates.includes(date)).length;
+}
+
+// Partes com horário que chegaram agora e ainda não foram feitas nem avisadas hoje.
+function partsToRemind(habits: Habit[], now: { date: string; time: string }, alreadySent: Set<string>) {
+  const day = fromDateKey(now.date);
+  const due = [];
+  for (const habit of habits) {
+    if (!habit.parts || !isDueToday(habit, day)) continue;
+    const done = new Set(donePartIds(habit, now.date));
+    habit.parts.forEach((part, index) => {
+      const key = `${habit.id}:${part.id}`;
+      if (!part.time || done.has(part.id) || alreadySent.has(key) || !isPartReminderDue(part.time, now.time)) return;
+      due.push({
+        key,
+        payload: {
+          title: `${habit.emoji ? `${habit.emoji} ` : ""}${habit.title}`,
+          body: isSplit(habit)
+            ? `Parte ${index + 1} de ${habit.parts!.length}${part.label ? ` · ${part.label}` : ""} — ${part.time}`
+            : `Hora de fazer${habit.goal ? `: ${habit.goal}` : ""} (${part.time})`,
+          url: `/habitos/${habit.id}`,
+          tag: key,
+        },
+      });
+    });
+  }
+  return due;
 }
 
 async function send(subscription: Subscription, payload: Record<string, string>) {
@@ -83,8 +141,9 @@ Deno.serve(async (request) => {
 
     const { data: subscriptions } = await supabase.from("push_subscriptions").select("*").eq("user_id", auth.user.id);
     let sent = 0;
+    const habits = await habitsOf(auth.user.id);
     for (const subscription of subscriptions ?? []) {
-      const pending = await pendingToday(auth.user.id, localNow(subscription.timezone).date);
+      const pending = pendingCount(habits, localNow(subscription.timezone).date);
       const ok = await send(subscription, {
         title: "Teste do My Daily Habits",
         body: pending > 0 ? reminderText(pending) : "Tudo feito hoje. Os lembretes estão funcionando! ✅",
@@ -104,15 +163,37 @@ Deno.serve(async (request) => {
   if (error) return Response.json({ error: error.message }, { status: 500 });
 
   let sent = 0;
+  let partsSent = 0;
+  const habitsByUser = new Map<string, Promise<Habit[]>>();
+  const habitsFor = (userId: string) => {
+    if (!habitsByUser.has(userId)) habitsByUser.set(userId, habitsOf(userId));
+    return habitsByUser.get(userId)!;
+  };
+
   for (const subscription of subscriptions as Subscription[]) {
     const now = localNow(subscription.timezone);
-    if (subscription.last_sent_on === now.date || now.time < subscription.remind_at.slice(0, 5)) continue;
 
-    // Marca o dia antes de enviar: no máximo um lembrete por dia, mesmo se tudo já estiver feito.
-    await supabase.from("push_subscriptions").update({ last_sent_on: now.date }).eq("endpoint", subscription.endpoint);
-    const pending = await pendingToday(subscription.user_id, now.date);
-    if (pending > 0 && (await send(subscription, { title: "Hora dos seus hábitos", body: reminderText(pending), url: "/" }))) sent += 1;
+    // Resumo do dia: no máximo um por dia, mesmo se tudo já estiver feito.
+    const summaryDue = subscription.summary_enabled !== false && subscription.last_sent_on !== now.date && now.time >= subscription.remind_at.slice(0, 5);
+    if (summaryDue) {
+      await supabase.from("push_subscriptions").update({ last_sent_on: now.date }).eq("endpoint", subscription.endpoint);
+      const pending = pendingCount(await habitsFor(subscription.user_id), now.date);
+      if (pending > 0 && (await send(subscription, { title: "Hora dos seus hábitos", body: reminderText(pending), url: "/" }))) sent += 1;
+    }
+
+    // Partes com horário: um aviso por parte por dia.
+    if (subscription.parts_enabled === false) continue;
+    const alreadySent = new Set(subscription.parts_sent?.date === now.date ? subscription.parts_sent.keys ?? [] : []);
+    const due = partsToRemind(await habitsFor(subscription.user_id), now, alreadySent);
+    if (due.length === 0) continue;
+    await supabase
+      .from("push_subscriptions")
+      .update({ parts_sent: { date: now.date, keys: [...alreadySent, ...due.map((item) => item.key)] } })
+      .eq("endpoint", subscription.endpoint);
+    for (const item of due) {
+      if (await send(subscription, item.payload)) partsSent += 1;
+    }
   }
 
-  return Response.json({ checked: subscriptions.length, sent });
+  return Response.json({ checked: subscriptions.length, sent, partsSent });
 });

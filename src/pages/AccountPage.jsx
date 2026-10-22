@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useHabits } from "../context/useHabits";
 import { friendlyError, supabase } from "../services/cloud";
-import { currentReminder, disableReminder, enableReminder, reminderSupport, sendTestReminder, updateReminderTime } from "../services/reminders";
+import { currentReminder, disableReminder, enableReminder, reminderSupport, sendTestReminder, updateReminder } from "../services/reminders";
 
 const timeFormat = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
@@ -211,6 +211,8 @@ function ReminderCard({ userId }) {
   const [support, setSupport] = useState("checking");
   const [enabled, setEnabled] = useState(false);
   const [time, setTime] = useState("20:00");
+  const [summary, setSummary] = useState(true);
+  const [partsOn, setPartsOn] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(null);
 
@@ -222,7 +224,11 @@ function ReminderCard({ userId }) {
       if (!active) return;
       setSupport(result);
       setEnabled(Boolean(reminder));
-      if (reminder) setTime(reminder.time);
+      if (reminder) {
+        setTime(reminder.time);
+        setSummary(reminder.summary);
+        setPartsOn(reminder.parts);
+      }
     })();
     return () => {
       active = false;
@@ -253,22 +259,29 @@ function ReminderCard({ userId }) {
 
   return (
     <section className="card">
-      <h2>Lembrete diário</h2>
-      <p className="muted">Uma notificação por dia, no horário escolhido, se ainda houver hábito pendente. Funciona com o app fechado.</p>
+      <h2>Lembretes</h2>
+      <p className="muted">Notificações neste aparelho, mesmo com o app fechado. Só avisam o que ainda está pendente.</p>
 
       {support !== "ok" ? (
         <p className="status-msg">{supportText}</p>
       ) : (
         <>
-          <label className="times-field">
-            Horário
-            <input type="time" name="remind-at" value={time} onChange={(event) => setTime(event.target.value)} />
-          </label>
+          <div className="reminder-options">
+            <label className="check-option">
+              <input type="checkbox" name="summary" checked={summary} onChange={(event) => setSummary(event.target.checked)} />
+              Resumo do dia às
+              <input type="time" name="remind-at" value={time} disabled={!summary} onChange={(event) => setTime(event.target.value)} />
+            </label>
+            <label className="check-option">
+              <input type="checkbox" name="parts" checked={partsOn} onChange={(event) => setPartsOn(event.target.checked)} />
+              Avisar nos horários das partes dos hábitos
+            </label>
+          </div>
           <div className="actions">
             {enabled ? (
               <>
-                <button type="button" className="btn btn-primary" disabled={busy} onClick={() => run(() => updateReminderTime(time, userId), `Lembrete às ${time}.`)}>
-                  Salvar horário
+                <button type="button" className="btn btn-primary" disabled={busy} onClick={() => run(() => updateReminder({ time, summary, parts: partsOn }, userId), "Lembretes salvos.")}>
+                  Salvar
                 </button>
                 <button
                   type="button"
@@ -292,9 +305,9 @@ function ReminderCard({ userId }) {
                 type="button"
                 className="btn btn-primary"
                 disabled={busy}
-                onClick={async () => (await run(() => enableReminder(time, userId), `Pronto! Lembrete todo dia às ${time}.`)) && setEnabled(true)}
+                onClick={async () => (await run(() => enableReminder({ time, summary, parts: partsOn }, userId), "Pronto! Lembretes ativados neste aparelho.")) && setEnabled(true)}
               >
-                Ativar lembrete
+                Ativar lembretes
               </button>
             )}
           </div>

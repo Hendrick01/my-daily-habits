@@ -36,7 +36,7 @@ O `.env` não vai para o Git. Com a variável vazia (ou sem `.env`), as sugestõ
 Sem as variáveis `VITE_SUPABASE_*`, o app funciona só no navegador. Com elas, ganha conta (e-mail e senha), sincronização entre aparelhos e lembrete diário por notificação. A parte de servidor fica em `supabase/`:
 
 - `migrations/`: tabelas `habits` e `push_subscriptions`, com RLS (cada usuário só acessa as próprias linhas) e o agendamento a cada 5 minutos.
-- `functions/send-reminders/`: envia os lembretes por Web Push. Usa as mesmas regras de frequência do app (`functions/_shared/`).
+- `functions/send-reminders/`: envia os lembretes por Web Push (resumo do dia e horários das partes). Usa as mesmas regras de frequência e de partes do app (`functions/_shared/`).
 - `functions/delete-account/`: exclui a conta de quem chama (e, em cascata, os hábitos e lembretes).
 
 Para montar num projeto Supabase seu:
@@ -99,7 +99,7 @@ O site fica em **https://my-daily-habits.vercel.app**. A Vercel está ligada a e
 | Rota | O que faz |
 | --- | --- |
 | `/` | Saudação, barra de progresso, o contador "X de Y hábitos concluídos." e só o que está programado para hoje |
-| `/novo` | Cadastro com validação, frequência, ícone opcional e ideias rápidas de um clique; após cadastrar, volta para o início |
+| `/novo` | Cadastro com validação, frequência, partes do dia, ícone opcional e ideias rápidas de um clique; após cadastrar, volta para o início |
 | `/habitos` | Lista completa com filtro (todos, pendentes, concluídos) e backup dos dados |
 | `/habitos/:habitId` | Detalhe: sequência atual e recorde, últimos 7 dias (clicáveis), calendário de 16 semanas, editar e excluir |
 | `/progresso` | Anel de porcentagem, gráfico da semana e maior sequência; sem hábitos, redireciona para `/novo` |
@@ -110,6 +110,8 @@ O site fica em **https://my-daily-habits.vercel.app**. A Vercel está ligada a e
 Além disso:
 
 - Cada hábito guarda os dias em que foi feito: a lista recomeça sozinha a cada dia, inclusive com o app aberto na virada da meia-noite.
+- Partes do dia: um hábito pode ser dividido em até 12 partes (ex.: 6 copos de água, remédio de manhã e à noite), cada uma com nome e horário opcionais. O botão do cartão marca a próxima parte; o dia só conta como feito com todas.
+- Lembretes por notificação (com conta): resumo do dia no horário escolhido e um aviso no horário de cada parte que ainda estiver pendente.
 - Frequência por hábito: todo dia, dias da semana (ex.: seg, qua, sex) ou N vezes por semana. A sequência conta os dias programados, ou as semanas em que a meta foi batida.
 - Dá para marcar ou desmarcar dias passados, para corrigir um esquecimento.
 - Os hábitos ficam salvos no navegador (`localStorage`); o backup exporta e importa tudo num arquivo JSON.

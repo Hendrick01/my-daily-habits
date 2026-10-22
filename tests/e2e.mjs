@@ -253,6 +253,59 @@ test("frequência: meta semanal mostra o progresso da semana", async () => {
   await expectJs(`document.querySelector(".hero-count").textContent`, /^2 de 4/);
 });
 
+// ---------- partes do dia ----------
+
+const remedio = `[...document.querySelectorAll(".habit-card")].find((card) => card.textContent.includes("Remédio"))`;
+
+test("partes: cadastro com 'Manhã, tarde e noite' cria 3 partes no cartão", async () => {
+  await resetData();
+  await go("/novo");
+  await js(`${fill('input[name="habit"]', "Remédio")} ${fill('input[name="goal"]', "1 comprimido")}`);
+  await js(clickText(".chip", "Manhã, tarde e noite"));
+  await expectJs(`document.querySelectorAll(".parts-editor li").length`, 3);
+  await js(click(".form button[type=submit]"));
+  await expectJs(`location.pathname`, "/");
+  await expectJs(`${remedio}?.querySelector(".check-count")?.textContent`, "0/3");
+  await expectJs(`[...${remedio}.querySelectorAll(".part-chip")].map((chip) => chip.textContent)`, ["Manhã · 08:00", "Tarde · 13:00", "Noite · 20:00"]);
+});
+
+test("partes: botão principal marca a próxima; o dia só conclui com todas", async () => {
+  await js(`${remedio}.querySelector(".check").click();`);
+  await expectJs(`${remedio}.querySelector(".check-count")?.textContent`, "1/3");
+  await expectJs(`${remedio}.querySelector(".habit-status").textContent`, "1 de 3");
+  await expectJs(`${remedio}.querySelector(".part-chip").getAttribute("aria-pressed")`, "true");
+  await js(`${remedio}.querySelectorAll(".part-chip")[2].click();`);
+  await expectJs(`${remedio}.querySelector(".check-count")?.textContent`, "2/3");
+  await expectJs(`document.querySelector(".hero-count").textContent`, /^1 de 4/);
+  await js(`${remedio}.querySelectorAll(".part-chip")[1].click();`);
+  await expectJs(`${remedio}.classList.contains("is-complete")`, true);
+  await expectJs(`document.querySelector(".hero-count").textContent`, /^2 de 4/);
+});
+
+test("partes: editar removendo uma parte mantém o progresso das outras", async () => {
+  const id = await js(`return ${saved}.find((habit) => habit.title === "Remédio").id`);
+  await go(`/habitos/${id}`);
+  await expectJs(`document.querySelector(".card h3")?.textContent`, "Partes de hoje · 3 de 3");
+  await js(clickText(".btn", "Editar"));
+  await expectJs(`document.querySelectorAll(".parts-editor li").length`, 3);
+  await js(`document.querySelectorAll(".remove-part")[1].click();`);
+  await expectJs(`document.querySelectorAll(".parts-editor li").length`, 2);
+  await js(click(".form button[type=submit]"));
+  await expectJs(`document.querySelector(".card h3")?.textContent`, "Partes de hoje · 2 de 2");
+});
+
+test("partes: uma parte só com horário vira etiqueta ⏰ no cartão", async () => {
+  await go("/novo");
+  await js(`${fill('input[name="habit"]', "Vitamina")} ${fill('input[name="goal"]', "1 cápsula")}`);
+  await js(clickText(".chip", "+ Adicionar parte"));
+  await expectJs(`document.querySelectorAll(".parts-editor li").length`, 1);
+  await js(fill('input[name="part-time"]', "07:30"));
+  await js(click(".form button[type=submit]"));
+  await expectJs(`location.pathname`, "/");
+  await expectJs(`[...document.querySelectorAll(".habit-card")].find((card) => card.textContent.includes("Vitamina"))?.querySelector(".schedule-tag")?.textContent`, "⏰ 07:30");
+  await expectJs(`[...document.querySelectorAll(".habit-card")].find((card) => card.textContent.includes("Vitamina"))?.querySelector(".check-count")`, null);
+});
+
 // ---------- detalhe ----------
 
 test("detalhe: marcar ontem soma na sequência", async () => {

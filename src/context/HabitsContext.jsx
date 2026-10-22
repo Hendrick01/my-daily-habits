@@ -5,6 +5,7 @@ import { fromDateKey, toDateKey } from "../utils/dates";
 import { sanitizeHabits } from "../utils/habits";
 import { DAILY, getWeekCount, isDueToday } from "../utils/schedule";
 import { mergeHabits } from "../utils/sync";
+import { sanitizePartsDone, toggleDay, togglePart as togglePartOn } from "../utils/parts";
 import { fetchRemoteHabits, pushHabits, supabase } from "../services/cloud";
 import { disableReminder } from "../services/reminders";
 
@@ -165,22 +166,23 @@ export function HabitsProvider({ children }) {
     );
   }
 
+  // Marca ou desmarca o dia inteiro (com partes, todas de uma vez).
   function toggleHabit(habitId, date = today) {
-    updateWhere(habitId, (habit) => ({
-      ...habit,
-      completedDates: habit.completedDates.includes(date)
-        ? habit.completedDates.filter((day) => day !== date)
-        : [...habit.completedDates, date].sort(),
-    }));
+    updateWhere(habitId, (habit) => toggleDay(habit, date));
   }
 
-  function addHabit(title, goal, emoji, schedule = DAILY) {
+  function togglePart(habitId, partId, date = today) {
+    updateWhere(habitId, (habit) => togglePartOn(habit, partId, date));
+  }
+
+  function addHabit(title, goal, emoji, schedule = DAILY, parts = undefined) {
     const newHabit = {
       id: crypto.randomUUID(),
       title: title.trim(),
       goal: goal.trim(),
       emoji,
       schedule,
+      parts,
       completedDates: [],
       updatedAt: stamp(),
     };
@@ -188,8 +190,17 @@ export function HabitsProvider({ children }) {
     change((currentHabits) => [...currentHabits, newHabit]);
   }
 
-  function updateHabit(habitId, title, goal, emoji, schedule) {
-    updateWhere(habitId, (habit) => ({ ...habit, title: title.trim(), goal: goal.trim(), emoji, schedule }));
+  function updateHabit(habitId, title, goal, emoji, schedule, parts) {
+    updateWhere(habitId, (habit) => ({
+      ...habit,
+      title: title.trim(),
+      goal: goal.trim(),
+      emoji,
+      schedule,
+      parts,
+      // Partes removidas levam junto o progresso delas.
+      partsDone: sanitizePartsDone(habit.partsDone, parts),
+    }));
   }
 
   function removeHabit(habitId) {
@@ -213,6 +224,7 @@ export function HabitsProvider({ children }) {
     dueCount,
     today,
     toggleHabit,
+    togglePart,
     addHabit,
     updateHabit,
     removeHabit,

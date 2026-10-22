@@ -1,7 +1,15 @@
 import { useState } from "react";
 import { DAILY, DAY_LABELS } from "../utils/schedule";
+import { MAX_PARTS } from "../utils/parts";
 
 const EMOJIS = ["💧", "📖", "🧘", "🏃", "🍎", "💤", "✍️", "🎯", "💪", "🧹", "🎸", "🌱"];
+const PRESET_PARTS = [
+  { label: "Manhã", time: "08:00" },
+  { label: "Tarde", time: "13:00" },
+  { label: "Noite", time: "20:00" },
+];
+const newPartId = () => crypto.randomUUID().slice(0, 8);
+
 const SCHEDULE_TYPES = [
   ["daily", "Todo dia"],
   ["weekdays", "Dias da semana"],
@@ -15,6 +23,7 @@ export default function HabitForm({
   initialGoal = "",
   initialEmoji = "",
   initialSchedule = DAILY,
+  initialParts = [],
   submitLabel = "Adicionar hábito",
 }) {
   const [title, setTitle] = useState(initialTitle);
@@ -23,12 +32,32 @@ export default function HabitForm({
   const [scheduleType, setScheduleType] = useState(initialSchedule.type);
   const [days, setDays] = useState(initialSchedule.type === "weekdays" ? initialSchedule.days : [1, 2, 3, 4, 5]);
   const [times, setTimes] = useState(initialSchedule.type === "weekly" ? initialSchedule.times : 3);
+  const [parts, setParts] = useState(initialParts.map((part) => ({ ...part, time: part.time ?? "" })));
   const [error, setError] = useState("");
 
   const emojiOptions = ["", ...new Set([initialEmoji, ...EMOJIS].filter(Boolean))];
 
   function toggleDay(day) {
     setDays((current) => (current.includes(day) ? current.filter((item) => item !== day) : [...current, day].sort((a, b) => a - b)));
+  }
+
+  function addPart() {
+    setParts((current) => [...current, { id: newPartId(), label: "", time: "" }]);
+  }
+
+  function updatePart(partId, field, value) {
+    setParts((current) => current.map((part) => (part.id === partId ? { ...part, [field]: value } : part)));
+  }
+
+  function removePart(partId) {
+    setParts((current) => current.filter((part) => part.id !== partId));
+  }
+
+  // Uma parte só, sem nome nem horário, é o mesmo que não dividir.
+  function buildParts() {
+    const clean = parts.map((part) => ({ id: part.id, label: part.label.trim(), time: part.time || null }));
+    if (clean.length === 0 || (clean.length === 1 && !clean[0].label && !clean[0].time)) return undefined;
+    return clean;
   }
 
   function buildSchedule() {
@@ -49,11 +78,12 @@ export default function HabitForm({
       return;
     }
 
-    onSave(title, goal, emoji || undefined, buildSchedule());
+    onSave(title, goal, emoji || undefined, buildSchedule(), buildParts());
     setTitle("");
     setGoal("");
     setEmoji("");
     setScheduleType("daily");
+    setParts([]);
     setError("");
   }
 
@@ -125,6 +155,53 @@ export default function HabitForm({
             />
           </label>
         )}
+      </fieldset>
+
+      <fieldset className="field plain-fieldset">
+        <legend>Partes do dia (opcional)</legend>
+        <p className="field-hint">
+          Divida em partes, como 4 copos de água ou remédio de manhã e à noite. Com horário, cada parte vira um lembrete.
+        </p>
+        {parts.length > 0 && (
+          <ol className="parts-editor">
+            {parts.map((part, index) => (
+              <li key={part.id}>
+                <span className="part-number" aria-hidden="true">
+                  {index + 1}
+                </span>
+                <input
+                  type="text"
+                  name="part-label"
+                  aria-label={`Nome da parte ${index + 1}`}
+                  placeholder={`Parte ${index + 1}`}
+                  maxLength={40}
+                  value={part.label}
+                  onChange={(event) => updatePart(part.id, "label", event.target.value)}
+                />
+                <input
+                  type="time"
+                  name="part-time"
+                  aria-label={`Horário da parte ${index + 1}`}
+                  value={part.time}
+                  onChange={(event) => updatePart(part.id, "time", event.target.value)}
+                />
+                <button type="button" className="remove-part" aria-label={`Remover parte ${index + 1}`} onClick={() => removePart(part.id)}>
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
+        <div className="chips">
+          <button type="button" className="chip" onClick={addPart} disabled={parts.length >= MAX_PARTS}>
+            + Adicionar parte
+          </button>
+          {parts.length === 0 && (
+            <button type="button" className="chip" onClick={() => setParts(PRESET_PARTS.map((part) => ({ ...part, id: newPartId() })))}>
+              Manhã, tarde e noite
+            </button>
+          )}
+        </div>
       </fieldset>
 
       <fieldset className="field plain-fieldset">

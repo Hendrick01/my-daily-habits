@@ -1,4 +1,5 @@
 import { sanitizeSchedule } from "./schedule.js";
+import { sanitizeParts, sanitizePartsDone } from "./parts.js";
 
 const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -19,6 +20,7 @@ export function sanitizeHabits(list, today) {
   return list
     .filter((habit) => isHabit(habit) && !seenIds.has(habit.id) && seenIds.add(habit.id))
     .map((habit) => {
+      const parts = sanitizeParts(habit.parts);
       const dates = Array.isArray(habit.completedDates) ? habit.completedDates : habit.completed ? [today] : [];
       return {
         id: habit.id,
@@ -26,6 +28,8 @@ export function sanitizeHabits(list, today) {
         goal: typeof habit.goal === "string" && habit.goal.trim() ? habit.goal : undefined,
         emoji: typeof habit.emoji === "string" && habit.emoji.length <= 16 ? habit.emoji : undefined,
         schedule: sanitizeSchedule(habit.schedule),
+        parts,
+        partsDone: sanitizePartsDone(habit.partsDone, parts),
         updatedAt: isTimestamp(habit.updatedAt) ? new Date(habit.updatedAt).toISOString() : undefined,
         deleted: habit.deleted === true ? true : undefined,
         completedDates: [...new Set(dates.filter((date) => typeof date === "string" && DATE_KEY.test(date)))].sort(),

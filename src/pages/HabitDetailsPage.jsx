@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useHabits } from "../context/useHabits";
 import HabitForm from "../components/HabitForm";
+import PartChips from "../components/PartChips";
+import { partProgress } from "../utils/parts";
 import { fromDateKey, lastDays, toDateKey } from "../utils/dates";
 import { describeSchedule, getBestStreak, getStreak, isOffDay, streakUnit } from "../utils/schedule";
 
@@ -53,8 +55,8 @@ export default function HabitDetailsPage() {
     );
   }
 
-  function handleSave(title, goal, emoji, schedule) {
-    updateHabit(habit.id, title, goal, emoji, schedule);
+  function handleSave(title, goal, emoji, schedule, parts) {
+    updateHabit(habit.id, title, goal, emoji, schedule, parts);
     setEditing(false);
   }
 
@@ -69,6 +71,7 @@ export default function HabitDetailsPage() {
 
   const todayDate = fromDateKey(today);
   const done = new Set(habit.completedDates);
+  const progress = partProgress(habit, today);
   const streak = getStreak(habit, todayDate);
   const best = getBestStreak(habit, todayDate);
 
@@ -80,6 +83,7 @@ export default function HabitDetailsPage() {
           initialGoal={habit.goal ?? ""}
           initialEmoji={habit.emoji ?? ""}
           initialSchedule={habit.schedule}
+          initialParts={habit.parts ?? []}
           submitLabel="Salvar alterações"
           onSave={handleSave}
           onCancel={() => setEditing(false)}
@@ -102,9 +106,23 @@ export default function HabitDetailsPage() {
             </p>
           </div>
           <span className={`habit-status${habit.completed ? " is-done" : ""}`}>
-            Status: {habit.completed ? "Concluído" : "Pendente"}
+            Status: {habit.completed ? "Concluído" : progress.done > 0 ? `${progress.done} de ${progress.total}` : "Pendente"}
           </span>
         </div>
+      )}
+
+      {habit.parts && (
+        <>
+          <h3 className="section-gap">
+            {habit.parts.length > 1 ? `Partes de hoje · ${progress.done} de ${progress.total}` : "Horário"}
+          </h3>
+          {habit.parts.length > 1 ? (
+            <PartChips habit={habit} size="large" />
+          ) : (
+            <p className="muted">⏰ {habit.parts[0].time ?? "sem horário"}</p>
+          )}
+          <p className="muted parts-hint">Partes com horário viram lembrete (com conta e notificações ativadas em Conta).</p>
+        </>
       )}
 
       <div className="stats">

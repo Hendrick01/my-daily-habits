@@ -1,7 +1,7 @@
 // Service worker do My Daily Habits: deixa o app abrir sem internet.
 // Páginas: rede primeiro (para pegar versões novas), cópia salva se estiver offline.
 // Arquivos (JS, CSS, ícones, sugestões): responde com a cópia salva e atualiza em segundo plano.
-const CACHE = "my-daily-habits-v2";
+const CACHE = "my-daily-habits-v3";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(["/", "/manifest.webmanifest", "/favicon.svg"])));
@@ -48,7 +48,7 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
-// Lembretes: a função send-reminders manda { title, body, url }.
+// Lembretes: a função send-reminders manda { title, body, url, tag }.
 self.addEventListener("push", (event) => {
   const data = event.data?.json() ?? {};
   event.waitUntil(
@@ -56,7 +56,7 @@ self.addEventListener("push", (event) => {
       body: data.body,
       icon: "/icon-192.png",
       badge: "/icon-192.png",
-      tag: "lembrete-diario",
+      tag: data.tag ?? "lembrete-diario",
       data: { url: data.url ?? "/" },
     }),
   );

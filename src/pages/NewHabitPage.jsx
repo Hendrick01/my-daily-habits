@@ -15,8 +15,8 @@ export default function NewHabitPage() {
   const { habits, addHabit } = useHabits();
   const navigate = useNavigate();
 
-  function handleAddHabit(title, goal, emoji, schedule) {
-    addHabit(title, goal, emoji, schedule);
+  function handleAddHabit(title, goal, emoji, schedule, parts) {
+    addHabit(title, goal, emoji, schedule, parts);
     navigate("/");
   }
 

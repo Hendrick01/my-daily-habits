@@ -24,25 +24,32 @@ async function registration() {
 export async function currentReminder() {
   const subscription = await (await registration()).pushManager.getSubscription();
   if (!subscription) return null;
-  const { data } = await supabase.from("push_subscriptions").select("remind_at").eq("endpoint", subscription.endpoint).maybeSingle();
-  return data ? { time: data.remind_at.slice(0, 5) } : null;
+  const { data } = await supabase
+    .from("push_subscriptions")
+    .select("remind_at, summary_enabled, parts_enabled")
+    .eq("endpoint", subscription.endpoint)
+    .maybeSingle();
+  return data ? { time: data.remind_at.slice(0, 5), summary: data.summary_enabled, parts: data.parts_enabled } : null;
 }
 
-async function saveReminder(subscription, time, userId) {
+// settings: { time: "HH:MM", summary: boolean, parts: boolean }
+async function saveReminder(subscription, settings, userId) {
   const { endpoint, keys } = subscription.toJSON();
   const { error } = await supabase.from("push_subscriptions").upsert({
     endpoint,
     user_id: userId,
     p256dh: keys.p256dh,
     auth: keys.auth,
-    remind_at: time,
+    remind_at: settings.time,
+    summary_enabled: settings.summary,
+    parts_enabled: settings.parts,
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     last_sent_on: null, // horário novo pode valer ainda hoje
   });
   if (error) throw error;
 }
 
-export async function enableReminder(time, userId) {
+export async function enableReminder(settings, userId) {
   const permission = await Notification.requestPermission();
   if (permission !== "granted") throw new Error("Permita as notificações deste site nas configurações do navegador.");
 
@@ -50,12 +57,12 @@ export async function enableReminder(time, userId) {
   const subscription =
     (await pushManager.getSubscription()) ??
     (await pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: base64UrlToBytes(VAPID_PUBLIC_KEY) }));
-  await saveReminder(subscription, time, userId);
+  await saveReminder(subscription, settings, userId);
 }
 
-export async function updateReminderTime(time, userId) {
+export async function updateReminder(settings, userId) {
   const subscription = await (await registration()).pushManager.getSubscription();
-  if (subscription) await saveReminder(subscription, time, userId);
+  if (subscription) await saveReminder(subscription, settings, userId);
 }
 
 export async function disableReminder() {
