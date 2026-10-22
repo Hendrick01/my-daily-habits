@@ -65,7 +65,7 @@ my-daily-habits/
 │   ├── functions/delete-account/  # apaga a conta do usuário logado
 │   ├── migrations/           # tabelas, RLS e o agendamento do cron
 │   └── config.toml           # alinhado ao servidor (MFA, pool, storage)
-├── tests/e2e.mjs             # 47 testes de navegador, sem dependências
+├── tests/e2e.mjs             # 50 testes de navegador, sem dependências
 ├── .github/workflows/ci.yml  # lint → unitários → e2e
 ├── vercel.json               # rewrite de tudo para /index.html (SPA)
 └── docs/ · ATIVIDADE.md · DIARIO.md · RESPOSTAS.md · AI_TUTOR.md · LEIA-ME.md   # material do curso (ver Cuidados)
@@ -91,7 +91,7 @@ my-daily-habits/
 | `/treino/:workoutId` | `WorkoutPage`: editar um treino |
 | `/sugestoes`, `/sobre`, `/conta`, `*` | `SuggestionsPage`, `AboutPage`, `AccountPage`, `NotFoundPage` |
 
-O `AppLayout` guarda o tema em `my-daily-habits:theme` e só mostra o botão de conta quando o Supabase está configurado (`cloud.enabled`).
+O `AppLayout` guarda o tema em `my-daily-habits:theme` e só mostra o botão de conta quando o Supabase está configurado (`cloud.enabled`). Em telas de até 640 px (modo celular), o menu do topo some e aparece o `TabBar`, uma barra fixa embaixo com Hoje, Hábitos, Novo e Treino. O resto fica no menu "Mais", que usa o atributo HTML `popover`.
 
 ### Hábitos
 
@@ -121,11 +121,11 @@ O `AppLayout` guarda o tema em `my-daily-habits:theme` e só mostra o botão de 
 
 ### Treino
 
-**Estado:** `src/context/TrainingContext.jsx`. Guarda `{ profile, workouts, customExercises, updatedAt }` em `my-daily-habits:training` e expõe `findExercise`, `saveProfile(profile, { regenerate })`, ações de treino (`addWorkout`, `updateWorkout`, `removeWorkout`), de item (`addItem`, `updateItem`, `removeItem`, `moveItem`) e de exercício próprio (`addCustomExercise`, `removeCustomExercise`).
+**Estado:** `src/context/TrainingContext.jsx`. Guarda `{ profile, workouts, customExercises, updatedAt }` em `my-daily-habits:training` e expõe `findExercise`, `saveProfile(profile, { regenerate })`, ações de treino (`addWorkout`, `updateWorkout`, `removeWorkout`), de item (`addItem`, `updateItem`, `removeItem`, `moveItem`, `setRestForAll(rest, workoutId?)`) e de exercício próprio (`addCustomExercise`, `removeCustomExercise`).
 
 | Arquivo | Papel |
 |---------|-------|
-| `utils/training.js` | o "cérebro" do treino: `GOAL_RULES` (15 objetivos), `prescription`, `exercisesFor`, `buildPlan`, IMC, PAR-Q, `planToCsv`, `filterExercises`, `videoUrlFor`, `describeGoal` |
+| `utils/training.js` | o "cérebro" do treino: `GOAL_RULES` (15 objetivos), `prescription`, `exercisesFor`, `buildPlan`, IMC, PAR-Q, `planToCsv`, `filterExercises`, `videoUrlFor`, `describeGoal`, `REPS_PRESETS` e `REST_PRESETS` (opções do editor) |
 | `data/exercises.js` | 79 exercícios montados pelos ajudantes `strength(...)`, `cardio(...)` e `stretch(...)`, mais `GROUPS`, `EQUIPMENT`, `TYPES` e `IMAGE_BASE` |
 | `services/catalog.js` | baixa o catálogo completo do Free Exercise DB (`dist/exercises.json`) sob demanda e traduz músculos e equipamentos |
 | `components/ExerciseDemo.jsx` | alterna as imagens `0.jpg` e `1.jpg` como animação |
@@ -196,6 +196,8 @@ sequenceDiagram
 - **A chave `service_role`/secret nunca vai para o front, os logs ou a conversa.** Só a publishable é pública.
 - **O CSV começa com BOM** para o Excel abrir os acentos. O teste lê os bytes crus, porque `blob.text()` remove o BOM.
 - **O service worker tem dois caches:** `my-daily-habits-v4` para o app e `my-daily-habits-exercicios-v1` para as imagens. Mude o nome quando a estratégia de cache mudar.
+- **Gerado = opção pronta:** um teste garante que toda repetição prescrita pelo gerador está em `REPS_PRESETS`. Ao criar um objetivo com outro texto de repetição, acrescente-o lá.
+- **`.sr-only` usa `!important`.** Sem isso, regras como `.field input { width: 100% }` esticavam os rádios escondidos e a página rolava para o lado no celular. O teste "celular" confere 13 páginas a 390 px.
 - **Seletores nos testes:** `.icon-button` também acerta o link de conta, então os testes usam `button.icon-button`.
 - **Material do curso:** `ATIVIDADE.md`, `DIARIO.md`, `RESPOSTAS.md`, `AI_TUTOR.md`, `LEIA-ME.md` e `docs/0*-*.md` pertencem ao curso. O conteúdo de autoria é escrito pelo aluno.
 
@@ -218,7 +220,7 @@ sequenceDiagram
 npm run dev          # Vite em desenvolvimento (sem service worker)
 npm run lint         # oxlint
 npm test             # unitários: utils.test.js + training.test.js
-npm run test:e2e     # build + 47 testes no Chrome (E2E_URL=https://… testa outro endereço)
+npm run test:e2e     # build + 50 testes no Chrome (E2E_URL=https://… testa outro endereço)
 ```
 
 A sincronização real entre dois aparelhos é testada por um script fora do repositório, com contas `e2e-*@mydailyhabits.dev`. Apague essas contas depois de rodar.

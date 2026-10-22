@@ -463,6 +463,42 @@ test("treino: editor muda séries, reordena e remove", async () => {
   await expectJs(`document.querySelectorAll(".workout-item").length`, 8);
 });
 
+test("treino: descanso de todos de uma vez, com ajuste por exercício", async () => {
+  const id = await js(`return ${training}.workouts[0].id`);
+  await go(`/treino/${id}`);
+  await expectJs(`document.querySelector(".bulk-rest").open`, false);
+  await js(click(".bulk-rest summary"));
+  await expectJs(`document.querySelector(".bulk-rest").open`, true);
+  await js(clickText(".bulk-rest .part-chip", "1 min 30 s"));
+  await js(clickText(".bulk-rest button", "Aplicar neste treino"));
+  await expectJs(`${training}.workouts[0].items.every((item) => item.rest === 90)`, true);
+  await expectJs(`${training}.workouts[1].items.some((item) => item.rest !== 90)`, true, 1000);
+  await expectJs(`document.querySelector(".bulk-rest .status-msg")?.textContent`, "Descanso de 1 min 30 s aplicado aos 8 exercícios.");
+  await js(fill('.workout-item input[name="rest"]', "120"));
+  await expectJs(`${training}.workouts[0].items.map((item) => item.rest).join()`, "120" + ",90".repeat(7));
+  await js(fill('.bulk-rest input[name="bulk-rest"]', "50"));
+  await expectJs(`document.querySelector('.bulk-rest .part-chip[aria-pressed="true"]')`, null);
+  await js(clickText(".bulk-rest button", "Aplicar em todos os treinos"));
+  await expectJs(`${training}.workouts.flatMap((w) => w.items).every((item) => item.rest === 50)`, true);
+});
+
+test("treino: repetições com opções prontas ou personalizadas", async () => {
+  const first = `document.querySelector(".workout-item")`;
+  const reps = `${training}.workouts[0].items[0].reps`;
+  await js(`{ const select = ${first}.querySelector('select[name="reps-preset"]');
+    Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value").set.call(select, "6–8");
+    select.dispatchEvent(new Event("change", { bubbles: true })); }`);
+  await expectJs(reps, "6–8");
+  await expectJs(`${first}.querySelector('input[name="reps"]')`, null);
+  await js(choose('.workout-item select[name="reps-preset"]', ""));
+  await expectJs(`${first}.querySelector('input[name="reps"]')?.value`, "6–8");
+  await js(fill('.workout-item input[name="reps"]', "12–10–8"));
+  await expectJs(reps, "12–10–8");
+  await go(await js(`return location.pathname`));
+  await expectJs(`${first}.querySelector('select[name="reps-preset"]').value`, "");
+  await expectJs(`${first}.querySelector('input[name="reps"]').value`, "12–10–8");
+});
+
 test("treino: seletor busca sem acento e adiciona exercício", async () => {
   await js(clickText(".btn", "+ Adicionar exercício"));
   await js(fill('.picker input[name="search"]', "triceps frances"));
@@ -530,7 +566,7 @@ test("treino: planilha CSV com avaliação e exercícios", async () => {
   assert.match(csv, /Objetivo;Ganhar massa muscular/);
   assert.match(csv, /IMC;25,9 \(Sobrepeso\)/);
   assert.match(csv, /Treino;Foco;Ordem;Exercício;Grupo;Séries;Repetições;Carga \(kg\);Descanso \(s\);Observações/);
-  assert.match(csv, /Treino A;Peito, Ombros e Tríceps;1;.*;3;8–12;40;75;/, "edição de séries e carga vai para a planilha");
+  assert.match(csv, /Treino A;Peito, Ombros e Tríceps;1;.*;3;12–10–8;40;50;/, "séries, repetições personalizadas, carga e descanso de todos vão para a planilha");
   assert.match(csv, /Remada no TRX/);
 });
 
@@ -553,6 +589,36 @@ test("treino: objetivo 'Glúteos e pernas' muda o resumo e o plano", async () =>
   await expectJs(`document.querySelectorAll(".workout-card").length`, 3);
   await expectJs(`${training}.workouts[0].items.some((item) => item.group === "gluteos" || item.group === "pernas")`, true);
   await expectJs(`document.querySelector(".profile-list dd")?.textContent`, "Glúteos e pernas");
+});
+
+test("celular: barra inferior, menu 'Mais' e nenhuma página com rolagem lateral", async () => {
+  const visible = (selector) => `getComputedStyle(document.querySelector(${JSON.stringify(selector)})).display !== "none"`;
+  const menuOpen = `document.querySelector("#more-menu").matches(":popover-open")`;
+  await go("/");
+  await expectJs(visible(".tab-bar"), false);
+  await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+  try {
+    await go("/");
+    await expectJs(visible(".tab-bar"), true);
+    await expectJs(visible(".main-nav"), false);
+    await js(clickText(".tab-bar a", "Treino"));
+    await expectJs(`location.pathname`, "/treino");
+    await expectJs(`document.querySelector(".tab-bar a.active")?.textContent`, "💪Treino");
+    await js(clickText(".tab-bar button", "Mais"));
+    await expectJs(menuOpen, true);
+    await js(clickText("#more-menu a", "Sugestões"));
+    await expectJs(`location.pathname`, "/sugestoes");
+    await expectJs(menuOpen, false);
+    await expectJs(`document.querySelector(".tab-bar button").classList.contains("active")`, true);
+
+    const workout = await js(`return ${training}.workouts[0].id`);
+    for (const path of ["/", "/habitos", "/novo", "/progresso", "/treino", "/treino/avaliacao", `/treino/${workout}`, "/treino/exercicios", "/treino/exercicios/supino-reto", "/treino/exercicios/novo", "/sugestoes", "/sobre", "/conta"]) {
+      await go(path);
+      await expectJs(`[${JSON.stringify(path)}, document.documentElement.scrollWidth]`, [path, 390]);
+    }
+  } finally {
+    await send("Emulation.clearDeviceMetricsOverride");
+  }
 });
 
 // ---------- progresso, tema, PWA ----------

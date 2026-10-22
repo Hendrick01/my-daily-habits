@@ -117,6 +117,9 @@ export function TrainingProvider({ children }) {
     addItem: (workoutId, exercise) => updateItems(workoutId, (items) => [...items, newItem(exercise, training.profile)]),
     updateItem: (workoutId, itemId, patch) => updateItems(workoutId, (items) => items.map((i) => (i.id === itemId ? { ...i, ...patch } : i))),
     removeItem: (workoutId, itemId) => updateItems(workoutId, (items) => items.filter((i) => i.id !== itemId)),
+    // Sem workoutId, vale para todos os treinos.
+    setRestForAll: (rest, workoutId = null) =>
+      updateWorkouts((workouts) => workouts.map((w) => (!workoutId || w.id === workoutId ? { ...w, items: w.items.map((i) => ({ ...i, rest })) } : w))),
     moveItem: (workoutId, itemId, delta) =>
       updateItems(workoutId, (items) => {
         const from = items.findIndex((i) => i.id === itemId);

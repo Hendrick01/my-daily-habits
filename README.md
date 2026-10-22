@@ -112,7 +112,7 @@ O site fica em **https://my-daily-habits.vercel.app**. A Vercel está ligada a e
 Além disso:
 
 - Cada hábito guarda os dias em que foi feito: a lista recomeça sozinha a cada dia, inclusive com o app aberto na virada da meia-noite.
-- Treino: a avaliação gera um plano (focado por grupo muscular, corpo inteiro ou só alongamento) respeitando objetivo, nível, local, tempo e lesões; cada treino termina com alongamentos. Séries, repetições, carga e descanso são editáveis, e o plano sai como planilha CSV (Excel/Google Planilhas) ou PDF. Com conta, sincroniza entre aparelhos.
+- Treino: a avaliação gera um plano (focado por grupo muscular, corpo inteiro ou só alongamento) respeitando objetivo, nível, local, tempo e lesões; cada treino termina com alongamentos. Séries, repetições (opções prontas ou valor livre), carga e descanso são editáveis, o descanso pode ser aplicado a todos os exercícios de uma vez, e o plano sai como planilha CSV (Excel/Google Planilhas) ou PDF. Com conta, sincroniza entre aparelhos.
 - Partes do dia: um hábito pode ser dividido em até 12 partes (ex.: 6 copos de água, remédio de manhã e à noite), cada uma com nome e horário opcionais. O botão do cartão marca a próxima parte; o dia só conta como feito com todas.
 - Lembretes por notificação (com conta): resumo do dia no horário escolhido e um aviso no horário de cada parte que ainda estiver pendente.
 - Frequência por hábito: todo dia, dias da semana (ex.: seg, qua, sex) ou N vezes por semana. A sequência conta os dias programados, ou as semanas em que a meta foi batida.
@@ -121,6 +121,7 @@ Além disso:
 - Se os dados salvos estiverem corrompidos, o app volta aos hábitos iniciais sem quebrar a tela.
 - Conta opcional (`/conta`): sincroniza os hábitos entre aparelhos (vence a edição mais recente) e envia um lembrete por dia no horário escolhido, mesmo com o app fechado. A conta pode ser excluída a qualquer momento, com todos os dados na nuvem.
 - Tema claro e escuro, que segue o sistema e lembra a escolha.
+- Modo celular: em telas pequenas, o menu vira uma barra fixa embaixo (Hoje, Hábitos, Novo, Treino e Mais), e os campos não dão zoom no iPhone.
 - Instalável como app (PWA) no celular e no computador; depois da primeira visita, abre sem internet.
 - O título da aba mostra o progresso, no formato "X/Y hábitos concluídos".
 

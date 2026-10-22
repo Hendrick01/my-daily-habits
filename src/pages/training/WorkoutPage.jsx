@@ -4,11 +4,105 @@ import { useTraining } from "../../context/useTraining";
 import ExerciseDemo from "../../components/ExerciseDemo";
 import ExercisePicker from "../../components/ExercisePicker";
 import { GROUPS } from "../../data/exercises";
+import { REPS_PRESETS, REST_PRESETS } from "../../utils/training";
+
+const PRESET_REPS = Object.values(REPS_PRESETS).flat();
+const restLabel = (seconds) => (seconds < 60 ? `${seconds} s` : `${Math.floor(seconds / 60)} min${seconds % 60 ? ` ${seconds % 60} s` : ""}`);
+
+function RepsField({ value, onChange }) {
+  const [customMode, setCustomMode] = useState(false);
+  const custom = customMode || !PRESET_REPS.includes(value);
+
+  function choose(event) {
+    // "Outro…" mantém o valor atual no campo, para ajustar a partir dele.
+    setCustomMode(event.target.value === "");
+    if (event.target.value) onChange(event.target.value);
+  }
+
+  return (
+    <label>
+      Repetições
+      <select name="reps-preset" value={custom ? "" : value} onChange={choose}>
+        {Object.entries(REPS_PRESETS).map(([group, options]) => (
+          <optgroup key={group} label={group}>
+            {options.map((option) => (
+              <option key={option}>{option}</option>
+            ))}
+          </optgroup>
+        ))}
+        <option value="">Outro…</option>
+      </select>
+      {custom && (
+        <input
+          name="reps"
+          maxLength={20}
+          placeholder="Ex.: 12, 12–10–8, 45 s"
+          aria-label="Repetições personalizadas"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      )}
+    </label>
+  );
+}
+
+function BulkRest({ workout, workoutCount, onApply }) {
+  const [rest, setRest] = useState(60);
+  const [message, setMessage] = useState("");
+
+  function apply(everyWorkout) {
+    onApply(rest, everyWorkout ? null : workout.id);
+    setMessage(`Descanso de ${restLabel(rest)} aplicado ${everyWorkout ? "em todos os treinos" : `aos ${workout.items.length} exercícios`}.`);
+  }
+
+  return (
+    <details className="card bulk-rest">
+      <summary>⏱️ Descanso de todos os exercícios</summary>
+      <p className="field-hint">Aplique um tempo a todos de uma vez. Depois, mude o de um exercício específico no campo dele.</p>
+      <div className="part-chips is-large" role="group" aria-label="Tempo de descanso">
+        {REST_PRESETS.map((seconds) => (
+          <button key={seconds} type="button" className="part-chip" aria-pressed={rest === seconds} onClick={() => setRest(seconds)}>
+            {restLabel(seconds)}
+          </button>
+        ))}
+        <label className="bulk-custom">
+          Outro:
+          <input
+            type="number"
+            name="bulk-rest"
+            min={0}
+            max={600}
+            inputMode="numeric"
+            value={REST_PRESETS.includes(rest) ? "" : rest}
+            placeholder="seg"
+            onChange={(event) => setRest(Math.min(600, Math.max(0, Number(event.target.value) || 0)))}
+          />
+          s
+        </label>
+      </div>
+      <div className="actions">
+        <button type="button" className="btn btn-primary btn-sm" onClick={() => apply(false)}>
+          Aplicar neste treino
+        </button>
+        {workoutCount > 1 && (
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => apply(true)}>
+            Aplicar em todos os treinos
+          </button>
+        )}
+      </div>
+      {message && (
+        <p className="status-msg" role="status">
+          {message}
+        </p>
+      )}
+    </details>
+  );
+}
 
 export default function WorkoutPage() {
   const { workoutId } = useParams();
   const navigate = useNavigate();
-  const { workouts, updateWorkout, removeWorkout, addItem, updateItem, removeItem, moveItem } = useTraining();
+  const { workouts, updateWorkout, removeWorkout, addItem, updateItem, removeItem, moveItem, setRestForAll } = useTraining();
   const [picking, setPicking] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
@@ -59,6 +153,8 @@ export default function WorkoutPage() {
         </label>
       </section>
 
+      {workout.items.length > 1 && <BulkRest key={workout.id} workout={workout} workoutCount={workouts.length} onApply={setRestForAll} />}
+
       {workout.items.length === 0 ? (
         <div className="empty">
           <p>Nenhum exercício neste treino ainda.</p>
@@ -91,10 +187,7 @@ export default function WorkoutPage() {
                   Séries
                   <input name="sets" min={1} max={20} inputMode="numeric" {...field(item, "sets", "number")} />
                 </label>
-                <label>
-                  Repetições
-                  <input name="reps" maxLength={20} {...field(item, "reps")} />
-                </label>
+                <RepsField value={item.reps ?? ""} onChange={(reps) => updateItem(workout.id, item.id, { reps })} />
                 <label>
                   Carga (kg)
                   <input name="load" maxLength={10} inputMode="decimal" {...field(item, "load")} />

@@ -144,6 +144,13 @@ export function needsMedicalClearance(profile) {
 
 const TIMED = { 1: "20 s", 2: "40 s", 3: "60 s" };
 
+// Opções prontas do editor de treino. Qualquer outro valor aparece como "Outro…", num campo livre.
+export const REPS_PRESETS = {
+  Repetições: ["3–6 rápidas", "4–6", "6–8", "8–10", "8–12", "10–12", "10–15", "12–15", "15–20", "20–25"],
+  Tempo: ["20 s", "30 s", "40 s", "45 s", "60 s", "90 s"],
+};
+export const REST_PRESETS = [30, 45, 60, 90, 120, 180];
+
 export function prescription(exercise, profile) {
   if (exercise.type === "alongamento") return { sets: 2, reps: "30 s", rest: 15 };
   const base = goalRule(profile?.goal);

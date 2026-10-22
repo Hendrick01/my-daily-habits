@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { EXERCISES } from "../data/exercises.js";
-import { GOALS, GOAL_RULES, describeGoal, filterExercises, videoUrlFor, bmi, bmiCategory, waistToHeight, needsMedicalClearance, prescription, exercisesFor, buildPlan, planToCsv, exercisesPerSession, joinLabels } from "./training.js";
+import { GOALS, GOAL_RULES, REPS_PRESETS, describeGoal, filterExercises, videoUrlFor, bmi, bmiCategory, waistToHeight, needsMedicalClearance, prescription, exercisesFor, buildPlan, planToCsv, exercisesPerSession, joinLabels } from "./training.js";
 
 const byId = Object.fromEntries(EXERCISES.map((exercise) => [exercise.id, exercise]));
 const profile = (extra = {}) => ({
@@ -107,6 +107,14 @@ assert.ok(power.every((workout) => workout.items.some((item) => byId[item.exerci
 
 const running = buildPlan(profile({ goal: "corrida" }));
 assert.ok(running.every((workout) => strengthItems(workout).some((item) => ["pernas", "panturrilhas", "abdomen"].includes(item.group))), "corrida trabalha pernas ou core todo dia");
+
+// O editor mostra como opção pronta tudo o que o gerador prescreve.
+const presetReps = Object.values(REPS_PRESETS).flat();
+for (const goal of Object.keys(GOALS))
+  for (const level of [1, 2, 3])
+    for (const style of ["focado", "hibrido", "alongamento"])
+      for (const item of buildPlan(profile({ goal, level, style })).flatMap((w) => w.items))
+        assert.ok(presetReps.includes(item.reps), `${goal}/${level}/${style}: "${item.reps}" fora das opções prontas`);
 
 // ---------- planilha ----------
 

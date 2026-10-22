@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useHabits } from "../context/useHabits";
 
 const THEME_KEY = "my-daily-habits:theme";
@@ -13,6 +13,48 @@ const links = [
   ["/sugestoes", "Sugestões"],
   ["/sobre", "Sobre"],
 ];
+
+// Modo celular: barra inferior com os destinos principais; o resto fica em "Mais".
+const tabs = [
+  ["/", "Hoje", "📅"],
+  ["/habitos", "Hábitos", "✅"],
+  ["/novo", "Novo", "➕"],
+  ["/treino", "Treino", "💪"],
+];
+const moreLinks = [
+  ["/progresso", "Progresso", "📈"],
+  ["/sugestoes", "Sugestões", "💡"],
+  ["/sobre", "Sobre", "ℹ️"],
+];
+
+function TabBar() {
+  const { pathname } = useLocation();
+  const menu = useRef(null);
+  const inMore = moreLinks.some(([to]) => pathname.startsWith(to));
+
+  return (
+    <nav className="tab-bar" aria-label="Navegação no celular">
+      {tabs.map(([to, label, icon]) => (
+        <NavLink key={to} to={to} end={to === "/"}>
+          <span aria-hidden="true">{icon}</span>
+          {label}
+        </NavLink>
+      ))}
+      <button type="button" popoverTarget="more-menu" className={inMore ? "active" : undefined}>
+        <span aria-hidden="true">☰</span>
+        Mais
+      </button>
+      <div id="more-menu" ref={menu} popover="auto" className="more-menu">
+        {moreLinks.map(([to, label, icon]) => (
+          <NavLink key={to} to={to} onClick={() => menu.current.hidePopover()}>
+            <span aria-hidden="true">{icon}</span>
+            {label}
+          </NavLink>
+        ))}
+      </div>
+    </nav>
+  );
+}
 
 function getInitialTheme() {
   try {
@@ -83,6 +125,8 @@ export default function AppLayout() {
       <main className="app">
         <Outlet />
       </main>
+
+      <TabBar />
     </>
   );
 }
