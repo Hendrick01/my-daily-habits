@@ -541,6 +541,20 @@ test("treino: cria o hábito 'Treinar' com a frequência do plano", async () => 
   await expectJs(`[...document.querySelectorAll(".btn")].some((b) => b.textContent.includes("já existe"))`, true);
 });
 
+test("treino: objetivo 'Glúteos e pernas' muda o resumo e o plano", async () => {
+  await js(`localStorage.removeItem("my-daily-habits:training");`);
+  await go("/treino/avaliacao");
+  await js(`${fill('input[name="age"]', "34")} ${fill('input[name="weight"]', "64")} ${fill('input[name="height"]', "165")}`);
+  await js(`[...document.querySelectorAll(".option-card")].find((card) => card.textContent.includes("Glúteos e pernas")).click();`);
+  await js(choose('select[name="level"]', "1"));
+  await expectJs(`document.querySelector(".option-grid + .field-hint")?.textContent`, "No treino: 3 séries de 10–15 · descanso de 60 s · mais Glúteos e Pernas.");
+  await js(click(".assessment button[type=submit]"));
+  await expectJs(`location.pathname`, "/treino");
+  await expectJs(`document.querySelectorAll(".workout-card").length`, 3);
+  await expectJs(`${training}.workouts[0].items.some((item) => item.group === "gluteos" || item.group === "pernas")`, true);
+  await expectJs(`document.querySelector(".profile-list dd")?.textContent`, "Glúteos e pernas");
+});
+
 // ---------- progresso, tema, PWA ----------
 
 test("progresso mostra porcentagem sem NaN", async () => {

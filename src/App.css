@@ -729,6 +729,10 @@
   outline-offset: 2px;
 }
 
+.option-grid + .field-hint {
+  margin-top: 10px;
+}
+
 .field-hint {
   margin: 0 0 8px;
   color: var(--muted);

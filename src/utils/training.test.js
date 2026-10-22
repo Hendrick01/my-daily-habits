@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { EXERCISES } from "../data/exercises.js";
-import { filterExercises, videoUrlFor, bmi, bmiCategory, waistToHeight, needsMedicalClearance, prescription, exercisesFor, buildPlan, planToCsv, exercisesPerSession, joinLabels } from "./training.js";
+import { GOALS, GOAL_RULES, describeGoal, filterExercises, videoUrlFor, bmi, bmiCategory, waistToHeight, needsMedicalClearance, prescription, exercisesFor, buildPlan, planToCsv, exercisesPerSession, joinLabels } from "./training.js";
 
 const byId = Object.fromEntries(EXERCISES.map((exercise) => [exercise.id, exercise]));
 const profile = (extra = {}) => ({
@@ -67,6 +67,46 @@ assert.ok(stretching[0].items.length >= 8, "rotina de 30 min tem pelo menos 8 al
 
 const knee = buildPlan(profile({ restrictions: ["joelho", "lombar"] }));
 assert.ok(knee.flatMap((workout) => workout.items).every((item) => !byId[item.exerciseId].cautions.some((c) => c === "joelho" || c === "lombar")));
+
+// ---------- objetivos ----------
+
+const strengthItems = (workout) => workout.items.filter((item) => byId[item.exerciseId].type === "forca");
+const stretchItems = (workout) => workout.items.filter((item) => byId[item.exerciseId].type === "alongamento");
+
+assert.equal(Object.keys(GOALS).length, 15, "15 objetivos");
+assert.ok(Object.values(GOAL_RULES).every((rule) => rule.label && rule.sets >= 2 && rule.reps && rule.rest > 0));
+assert.equal(describeGoal("gluteos-pernas"), "4 séries de 10–15 · descanso de 60 s · mais Glúteos e Pernas");
+assert.match(describeGoal("gluteos-pernas", 1), /^3 séries/, "iniciante: uma série a menos");
+assert.equal(describeGoal("objetivo-que-nao-existe"), describeGoal("saude"), "objetivo desconhecido cai em saúde");
+
+const glutes = buildPlan(profile({ goal: "gluteos-pernas" }));
+assert.ok(["gluteos", "pernas"].includes(strengthItems(glutes[0]).at(-1).group), "dia de peito ganha um exercício de glúteo ou perna");
+assert.ok(strengthItems(glutes[2]).filter((item) => ["gluteos", "pernas"].includes(item.group)).length >= 4, "dia de pernas concentra glúteos e pernas");
+
+const arms = buildPlan(profile({ goal: "bracos", style: "hibrido", days: 3 }));
+assert.ok(arms.every((workout) => ["biceps", "triceps", "ombros"].includes(strengthItems(workout)[0].group) || strengthItems(workout).some((i) => ["biceps", "triceps"].includes(i.group))));
+
+const posture = buildPlan(profile({ goal: "postura" }));
+assert.ok(posture.every((workout) => stretchItems(workout).length === 5), "postura termina com 5 alongamentos");
+assert.ok(posture.every((workout) => stretchItems(workout).some((item) => item.group === "peito")), "postura sempre alonga o peitoral");
+assert.ok(posture.every((workout) => /coluna/.test(workout.notes)));
+
+const comeback = buildPlan(profile({ goal: "retorno", level: 3 }));
+assert.ok(comeback.flatMap((w) => w.items).every((item) => byId[item.exerciseId].level === 1), "voltar a treinar usa só exercícios simples");
+assert.ok(comeback.flatMap(strengthItems).every((item) => item.sets === 2));
+
+const elderly = buildPlan(profile({ goal: "equilibrio", level: 2, style: "hibrido", days: 2 }));
+assert.ok(elderly.flatMap((w) => w.items).every((item) => byId[item.exerciseId].level === 1));
+assert.ok(elderly.every((workout) => /apoio firme/.test(workout.notes)));
+assert.ok(elderly.flatMap((w) => w.items).every((item) => !["flexao", "mergulho-banco"].includes(item.exerciseId)), "60+ dispensa flexão no chão e mergulho");
+assert.equal(prescription(byId.prancha, profile({ goal: "equilibrio", level: 3 })).reps, "20 s", "tempo segue o nível limitado pelo objetivo");
+
+const power = buildPlan(profile({ goal: "potencia" }));
+assert.equal(strengthItems(power[0])[0].reps, "3–6 rápidas");
+assert.ok(power.every((workout) => workout.items.some((item) => byId[item.exerciseId].type === "cardio")));
+
+const running = buildPlan(profile({ goal: "corrida" }));
+assert.ok(running.every((workout) => strengthItems(workout).some((item) => ["pernas", "panturrilhas", "abdomen"].includes(item.group))), "corrida trabalha pernas ou core todo dia");
 
 // ---------- planilha ----------
 

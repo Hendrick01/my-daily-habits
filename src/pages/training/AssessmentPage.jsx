@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTraining } from "../../context/useTraining";
-import { GOALS, LEVELS, PLACES, STYLES, RESTRICTIONS, PARQ_QUESTIONS, bmi, bmiCategory } from "../../utils/training";
+import { GOALS, LEVELS, PLACES, STYLES, RESTRICTIONS, PARQ_QUESTIONS, bmi, bmiCategory, describeGoal } from "../../utils/training";
 
 const DEFAULTS = {
   age: "",
@@ -134,6 +134,7 @@ export default function AssessmentPage() {
         <fieldset className="plain-fieldset">
           <legend>Objetivo</legend>
           <Options name="goal" options={GOALS} value={form.goal} onChange={set("goal")} />
+          <p className="field-hint">No treino: {describeGoal(form.goal, form.level)}.</p>
           <div className="field-row">
             <label className="field">
               Sua meta (opcional)
