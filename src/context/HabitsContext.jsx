@@ -143,6 +143,15 @@ export function HabitsProvider({ children }) {
     setSync({ status: "idle", at: null, error: "" });
   }
 
+  // Apaga a conta e os dados na nuvem; os hábitos deste aparelho continuam aqui.
+  async function deleteAccount() {
+    await disableReminder().catch(() => {});
+    const { error } = await supabase.functions.invoke("delete-account");
+    if (error) throw error;
+    await supabase.auth.signOut({ scope: "local" });
+    setSync({ status: "idle", at: null, error: "" });
+  }
+
   // ---------- ações ----------
 
   function change(update) {
@@ -214,6 +223,7 @@ export function HabitsProvider({ children }) {
       sync,
       syncNow: runSync,
       signOut,
+      deleteAccount,
       recovering,
       finishRecovery: () => setRecovering(false),
     },

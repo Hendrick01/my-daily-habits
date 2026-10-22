@@ -103,6 +103,14 @@
   background: var(--danger);
 }
 
+.notice {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--primary-soft) 50%, var(--surface));
+}
+
 .account-grid {
   display: grid;
   gap: 16px;

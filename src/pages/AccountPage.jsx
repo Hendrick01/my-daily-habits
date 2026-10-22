@@ -160,6 +160,53 @@ function SyncCard({ cloud }) {
   );
 }
 
+function DeleteAccountCard({ onDelete }) {
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleClick() {
+    if (!confirming) {
+      setConfirming(true);
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      await onDelete();
+    } catch (deleteError) {
+      setError(friendlyError(deleteError));
+      setBusy(false);
+      setConfirming(false);
+    }
+  }
+
+  return (
+    <section className="card">
+      <h2>Excluir conta</h2>
+      <p className="muted">
+        Apaga a conta e todos os hábitos salvos nela, em todos os aparelhos. Os hábitos deste aparelho continuam aqui. Se quiser uma cópia, faça um backup antes em Hábitos.
+      </p>
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
+      <div className="actions">
+        <button
+          type="button"
+          className={`btn btn-danger${confirming ? " is-confirming" : ""}`}
+          onClick={handleClick}
+          onBlur={() => !busy && setConfirming(false)}
+          disabled={busy}
+        >
+          {busy ? "Excluindo…" : confirming ? "Confirmar: excluir para sempre" : "Excluir minha conta"}
+        </button>
+      </div>
+    </section>
+  );
+}
+
 function ReminderCard({ userId }) {
   const [support, setSupport] = useState("checking");
   const [enabled, setEnabled] = useState(false);
@@ -265,6 +312,12 @@ function ReminderCard({ userId }) {
 
 export default function AccountPage() {
   const { cloud } = useHabits();
+  const [notice, setNotice] = useState("");
+
+  async function handleDelete() {
+    await cloud.deleteAccount();
+    setNotice("Conta excluída. Os dados na nuvem foram apagados; os hábitos deste aparelho continuam aqui.");
+  }
 
   return (
     <>
@@ -280,11 +333,19 @@ export default function AccountPage() {
       ) : cloud.recovering ? (
         <NewPasswordCard onDone={cloud.finishRecovery} />
       ) : !cloud.user ? (
-        <SignInCard />
+        <>
+          {notice && (
+            <p className="notice" role="status">
+              {notice}
+            </p>
+          )}
+          <SignInCard />
+        </>
       ) : (
         <div className="account-grid">
           <SyncCard cloud={cloud} />
           <ReminderCard userId={cloud.user.id} />
+          <DeleteAccountCard onDelete={handleDelete} />
         </div>
       )}
     </>
