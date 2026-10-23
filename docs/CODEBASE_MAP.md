@@ -66,6 +66,8 @@ my-daily-habits/
 │   ├── migrations/           # tabelas, RLS e o agendamento do cron
 │   └── config.toml           # alinhado ao servidor (MFA, pool, storage)
 ├── tests/e2e.mjs             # 51 testes de navegador, sem dependências
+├── tests/sync.mjs            # sincronização real entre 2 aparelhos (Supabase de produção)
+├── .claude/                  # skills /publicar e /testar-sync, hooks de lint e proteção
 ├── .github/workflows/ci.yml  # lint → unitários → e2e
 ├── vercel.json               # rewrite de tudo para /index.html (SPA)
 └── docs/ · ATIVIDADE.md · DIARIO.md · RESPOSTAS.md · AI_TUTOR.md · LEIA-ME.md   # material do curso (ver Cuidados)
@@ -221,6 +223,7 @@ npm run dev          # Vite em desenvolvimento (sem service worker)
 npm run lint         # oxlint
 npm test             # unitários: utils.test.js + training.test.js
 npm run test:e2e     # build + 51 testes no Chrome (E2E_URL=https://… testa outro endereço)
+npm run test:sync    # build + 10 etapas de sincronização real; apaga as contas e2e-* no fim
 ```
 
-A sincronização real entre dois aparelhos é testada por um script fora do repositório, com contas `e2e-*@mydailyhabits.dev`. Apague essas contas depois de rodar.
+O `tests/sync.mjs` cria contas `e2e-*@mydailyhabits.dev` no Supabase de produção e as apaga pelo Supabase CLI no fim, mesmo se falhar. Por isso precisa do CLI logado e ligado ao projeto. Não roda no CI.

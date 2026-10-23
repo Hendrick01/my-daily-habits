@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "node src/utils/utils.test.js && node src/utils/training.test.js",
-    "test:e2e": "vite build && node tests/e2e.mjs"
+    "test:e2e": "vite build && node tests/e2e.mjs",
+    "test:sync": "vite build && node tests/sync.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",

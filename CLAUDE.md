@@ -11,3 +11,8 @@ Para a arquitetura em detalhe, veja [docs/CODEBASE_MAP.md](docs/CODEBASE_MAP.md)
 - Push na `redesign` publica em produção. Não mescle a `redesign` no `main`, que é a entrega do curso.
 - Regras de datas, agenda e partes ficam em `supabase/functions/_shared/`; os arquivos de `src/utils/` só reexportam.
 - Verifique com `npm run lint && npm test && npm run test:e2e`.
+
+**Automações (`.claude/`), que valem quando o Claude Code é aberto nesta pasta:**
+- `/publicar [mensagem]`: lint, testes, e2e, commit, push, espera o deploy, testa o site publicado e confere o CI.
+- `/testar-sync`: sincronização real entre dois aparelhos (`npm run test:sync`), com limpeza das contas `e2e-*`.
+- Hooks: o oxlint roda em cada `.js`/`.jsx`/`.mjs` editado (avisos também contam); editar `.env` e `package-lock.json` é bloqueado; push para o `main` e merge da `redesign` também.
