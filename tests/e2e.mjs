@@ -36,8 +36,9 @@ const chrome = spawn(
   { stdio: "ignore" },
 );
 
+// Até 30 s: no CI, o Chrome já levou mais de 10 s para abrir na primeira vez.
 async function devtoolsPort() {
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 300; i++) {
     const content = await readFile(join(profile, "DevToolsActivePort"), "utf8").catch(() => "");
     if (content) return content.split("\n")[0];
     await wait(100);

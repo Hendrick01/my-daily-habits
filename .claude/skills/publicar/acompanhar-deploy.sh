@@ -29,7 +29,7 @@ e2e=${PIPESTATUS[0]}
 
 run=""
 for _ in $(seq 1 20); do
-  run=$(gh run list --commit "$FULL" -L 1 --json databaseId -q '.[0].databaseId' 2>/dev/null)
+  run=$(gh run list -L 10 --json databaseId,headSha -q ".[] | select(.headSha == \"$FULL\") | .databaseId" 2>/dev/null | head -1)
   [ -n "$run" ] && break
   sleep 6
 done
