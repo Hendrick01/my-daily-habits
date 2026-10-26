@@ -2,7 +2,20 @@ import { useState } from "react";
 import { DAILY, DAY_LABELS } from "../utils/schedule";
 import { MAX_PARTS } from "../utils/parts";
 
-const EMOJIS = ["💧", "📖", "🧘", "🏃", "🍎", "💤", "✍️", "🎯", "💪", "🧹", "🎸", "🌱"];
+// Por tema: saúde, exercício, comida, sono, mente, estudo, foco, dinheiro, casa, pessoas e lazer.
+const EMOJIS = [
+  "💧", "💊", "🦷", "🧴", "❤️",
+  "🏃", "🚶", "🚴", "🏊", "🏋️", "💪", "🤸", "🧘", "⚽",
+  "🍎", "🥗", "🥦", "🍳", "☕", "🚭",
+  "💤", "🛏️", "🌙", "☀️", "⏰",
+  "🧠", "🙏", "😊", "📵",
+  "📖", "📚", "✍️", "📝", "🎓", "🗣️", "💻",
+  "🎯", "✅", "📅", "⏱️",
+  "💰", "🐷",
+  "🧹", "🧺", "🍽️", "🌱", "🐶", "🛒",
+  "📞", "👪", "💌", "🤝",
+  "🎸", "🎹", "🎨", "📷", "🎮", "🧩", "✈️",
+];
 const PRESET_PARTS = [
   { label: "Manhã", time: "08:00" },
   { label: "Tarde", time: "13:00" },
