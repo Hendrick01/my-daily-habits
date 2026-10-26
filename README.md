@@ -121,7 +121,7 @@ Além disso:
 - Se os dados salvos estiverem corrompidos, o app volta aos hábitos iniciais sem quebrar a tela.
 - Conta opcional (`/conta`): sincroniza os hábitos entre aparelhos (vence a edição mais recente) e envia um lembrete por dia no horário escolhido, mesmo com o app fechado. A conta pode ser excluída a qualquer momento, com todos os dados na nuvem.
 - Tema claro e escuro, que segue o sistema e lembra a escolha.
-- Modo celular: em telas pequenas (ou pelo botão 📱 do topo, que liga e desliga e guarda a escolha), o menu vira uma barra fixa embaixo (Hoje, Hábitos, Novo, Treino e Mais), e os campos não dão zoom no iPhone. No computador, o modo celular mostra o app na largura de um celular.
+- Layout único de celular: a navegação é uma barra fixa embaixo (Hoje, Hábitos, Novo, Treino e Mais), e os campos não dão zoom no iPhone. No computador, o app aparece na largura de um celular.
 - Instalável como app (PWA) no celular e no computador; depois da primeira visita, abre sem internet.
 - O título da aba mostra o progresso, no formato "X/Y hábitos concluídos".
 

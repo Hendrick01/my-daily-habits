@@ -93,7 +93,7 @@ my-daily-habits/
 | `/treino/:workoutId` | `WorkoutPage`: editar um treino |
 | `/sugestoes`, `/sobre`, `/conta`, `*` | `SuggestionsPage`, `AboutPage`, `AccountPage`, `NotFoundPage` |
 
-O `AppLayout` guarda o tema em `my-daily-habits:theme` e só mostra o botão de conta quando o Supabase está configurado (`cloud.enabled`). No modo celular (`<html data-layout="mobile">`), o menu do topo some e aparece o `TabBar`, uma barra fixa embaixo com Hoje, Hábitos, Novo e Treino. O resto fica no menu "Mais", que usa o atributo HTML `popover`. O modo segue a largura da tela (até 640 px) até a pessoa tocar no botão 📱, e aí a escolha fica salva em `my-daily-habits:layout`. O `index.html` aplica tema e modo antes do React, para a tela não piscar. Todo o CSS do modo celular usa o seletor `:root[data-layout="mobile"]`, não media query.
+O `AppLayout` guarda o tema em `my-daily-habits:theme` e só mostra o botão de conta quando o Supabase está configurado (`cloud.enabled`). O layout é só de celular, também no computador: a navegação é o `TabBar`, uma barra fixa embaixo com Hoje, Hábitos, Novo e Treino, e o app fica com no máximo 480 px de largura. O resto fica no menu "Mais", que usa o atributo HTML `popover`. O `index.html` aplica o tema antes do React, para a tela não piscar.
 
 ### Hábitos
 

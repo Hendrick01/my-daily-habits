@@ -3,20 +3,8 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { useHabits } from "../context/useHabits";
 
 const THEME_KEY = "my-daily-habits:theme";
-const LAYOUT_KEY = "my-daily-habits:layout";
-const PHONE = "(max-width: 640px)";
 
-const links = [
-  ["/", "Hoje"],
-  ["/novo", "Novo hábito"],
-  ["/habitos", "Hábitos"],
-  ["/progresso", "Progresso"],
-  ["/treino", "Treino"],
-  ["/sugestoes", "Sugestões"],
-  ["/sobre", "Sobre"],
-];
-
-// Modo celular: barra inferior com os destinos principais; o resto fica em "Mais".
+// Navegação de celular (também no computador): barra inferior com os destinos principais; o resto fica em "Mais".
 const tabs = [
   ["/", "Hoje", "📅"],
   ["/habitos", "Hábitos", "✅"],
@@ -35,7 +23,7 @@ function TabBar() {
   const inMore = moreLinks.some(([to]) => pathname.startsWith(to));
 
   return (
-    <nav className="tab-bar" aria-label="Navegação no celular">
+    <nav className="tab-bar" aria-label="Principal">
       {tabs.map(([to, label, icon]) => (
         <NavLink key={to} to={to} end={to === "/"}>
           <span aria-hidden="true">{icon}</span>
@@ -58,17 +46,6 @@ function TabBar() {
   );
 }
 
-// Modo escolhido no botão 📱; sem escolha, segue a largura da tela.
-function getSavedLayout() {
-  try {
-    const saved = localStorage.getItem(LAYOUT_KEY);
-    if (saved === "mobile" || saved === "desktop") return saved;
-  } catch {
-    // armazenamento bloqueado: segue a tela
-  }
-  return null;
-}
-
 function getInitialTheme() {
   try {
     const saved = localStorage.getItem(THEME_KEY);
@@ -82,34 +59,10 @@ function getInitialTheme() {
 export default function AppLayout() {
   const { cloud } = useHabits();
   const [theme, setTheme] = useState(getInitialTheme);
-  const [savedLayout, setSavedLayout] = useState(getSavedLayout);
-  const [narrow, setNarrow] = useState(() => window.matchMedia(PHONE).matches);
-  const layout = savedLayout ?? (narrow ? "mobile" : "desktop");
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
-
-  useEffect(() => {
-    document.documentElement.dataset.layout = layout;
-  }, [layout]);
-
-  useEffect(() => {
-    const query = window.matchMedia(PHONE);
-    const onChange = (event) => setNarrow(event.matches);
-    query.addEventListener("change", onChange);
-    return () => query.removeEventListener("change", onChange);
-  }, []);
-
-  function toggleLayout() {
-    const next = layout === "mobile" ? "desktop" : "mobile";
-    setSavedLayout(next);
-    try {
-      localStorage.setItem(LAYOUT_KEY, next);
-    } catch {
-      // sem armazenamento, a escolha vale só nesta visita
-    }
-  }
 
   function toggleTheme() {
     const next = theme === "dark" ? "light" : "dark";
@@ -141,16 +94,6 @@ export default function AppLayout() {
             )}
             <button
               type="button"
-              className="icon-button layout-button"
-              onClick={toggleLayout}
-              aria-pressed={layout === "mobile"}
-              aria-label="Modo celular"
-              title={layout === "mobile" ? "Desligar o modo celular" : "Ligar o modo celular"}
-            >
-              {layout === "mobile" ? "🖥️" : "📱"}
-            </button>
-            <button
-              type="button"
               className="icon-button"
               onClick={toggleTheme}
               aria-label={theme === "dark" ? "Usar tema claro" : "Usar tema escuro"}
@@ -159,14 +102,6 @@ export default function AppLayout() {
             </button>
           </div>
         </div>
-
-        <nav className="main-nav" aria-label="Principal">
-          {links.map(([to, label]) => (
-            <NavLink key={to} to={to} end={to === "/"}>
-              {label}
-            </NavLink>
-          ))}
-        </nav>
       </header>
 
       <main className="app">

@@ -595,13 +595,13 @@ test("treino: objetivo 'Glúteos e pernas' muda o resumo e o plano", async () =>
 test("celular: barra inferior, menu 'Mais' e nenhuma página com rolagem lateral", async () => {
   const visible = (selector) => `getComputedStyle(document.querySelector(${JSON.stringify(selector)})).display !== "none"`;
   const menuOpen = `document.querySelector("#more-menu").matches(":popover-open")`;
+  // No computador, o mesmo layout de celular, na largura de um celular.
   await go("/");
-  await expectJs(visible(".tab-bar"), false);
+  await expectJs(`[${visible(".tab-bar")}, document.querySelector("main.app").getBoundingClientRect().width]`, [true, 480]);
   await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
   try {
     await go("/");
     await expectJs(visible(".tab-bar"), true);
-    await expectJs(visible(".main-nav"), false);
     await js(clickText(".tab-bar a", "Treino"));
     await expectJs(`location.pathname`, "/treino");
     await expectJs(`document.querySelector(".tab-bar a.active")?.textContent`, "💪Treino");
@@ -619,33 +619,6 @@ test("celular: barra inferior, menu 'Mais' e nenhuma página com rolagem lateral
     }
   } finally {
     await send("Emulation.clearDeviceMetricsOverride");
-  }
-});
-
-test("celular: botão liga e desliga o modo celular e guarda a escolha", async () => {
-  const visible = (selector) => `getComputedStyle(document.querySelector(${JSON.stringify(selector)})).display !== "none"`;
-  const button = `document.querySelector(".layout-button")`;
-  try {
-    await go("/treino");
-    await expectJs(`[document.documentElement.dataset.layout, ${button}.getAttribute("aria-pressed")]`, ["desktop", "false"]);
-    await js(click(".layout-button"));
-    await expectJs(`[document.documentElement.dataset.layout, ${visible(".tab-bar")}, ${visible(".main-nav")}]`, ["mobile", true, false]);
-    await expectJs(`document.querySelector("main.app").getBoundingClientRect().width`, 480);
-    await go("/treino");
-    await expectJs(`[document.documentElement.dataset.layout, ${button}.getAttribute("aria-pressed")]`, ["mobile", "true"]);
-    await js(click(".layout-button"));
-    await expectJs(`[document.documentElement.dataset.layout, ${visible(".tab-bar")}, localStorage.getItem("my-daily-habits:layout")]`, ["desktop", false, "desktop"]);
-
-    // No celular, desligar mostra o menu do topo mesmo com a tela estreita.
-    await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
-    await go("/");
-    await expectJs(`[${visible(".tab-bar")}, ${visible(".main-nav")}]`, [false, true]);
-    await js(`localStorage.removeItem("my-daily-habits:layout");`);
-    await go("/");
-    await expectJs(`[document.documentElement.dataset.layout, ${visible(".tab-bar")}]`, ["mobile", true]);
-  } finally {
-    await send("Emulation.clearDeviceMetricsOverride");
-    await js(`localStorage.removeItem("my-daily-habits:layout");`);
   }
 });
 
