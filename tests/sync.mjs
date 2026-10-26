@@ -11,11 +11,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import assert from "node:assert/strict";
+import { preview } from "vite";
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-const server = spawn("npx", ["vite", "preview", "--port", "4175", "--strictPort"], { stdio: "ignore" });
-for (let i = 0; i < 100; i++) { try { await fetch("http://localhost:4175/"); break; } catch { await wait(200); } }
-const APP = process.env.E2E_URL ?? "http://localhost:4175";
+// Pela API do Vite, como no e2e: com `npx vite preview`, matar o npx deixava o servidor rodando.
+const server = process.env.E2E_URL ? null : await preview({ preview: { port: 4175, strictPort: true }, logLevel: "silent" });
+const APP = (process.env.E2E_URL ?? server.resolvedUrls.local[0]).replace(/\/$/, "");
 const stampId = Date.now().toString(36);
 const userA = { email: `e2e-a-${stampId}@mydailyhabits.dev`, password: `Senha-${stampId}-A!` };
 const userC = { email: `e2e-c-${stampId}@mydailyhabits.dev`, password: `Senha-${stampId}-C!` };
@@ -192,7 +193,7 @@ try {
 } finally {
   await A.close();
   await B.close();
-  server.kill();
+  await server?.close();
   const cleanup = spawnSync(
     "npx",
     ["--yes", "supabase@2.121.0", "db", "query", "--linked", "delete from auth.users where email like 'e2e-%@mydailyhabits.dev'"],
